@@ -1,57 +1,47 @@
-___
-# DELETE THIS INSTRUCTIONS AND ADD AN INTRODUCTION ABOUT YOUR PROJECT
-___
+### GympAPPa Spooty App – Pera Sports & Gymnasium Management System
 
-# eYY-co2060-project-template
+GympAPPa Spooty App is a web-based application designed to improve the management and utilization of sports facilities and gymnasium resources at the University of Peradeniya.
 
-This is a sample repository you can use for your Software Systems Design Project. Once you followed these instructions, remove the text and add a brief introduction to here.
+Currently, activities such as borrowing sports equipment, checking court availability, organizing matches or tournaments, and sharing sports-related announcements are handled manually or through scattered communication methods. This leads to inefficiencies, lack of real-time updates, and difficulties in coordinating sports activities among students.
 
-### Enable GitHub Pages
+Our proposed solution is a centralized platform that allows students, sports staff, and administrators to manage all sports-related operations through a single system. The application will support real-time tracking of equipment issued from the counter, display availability of courts and grounds, and help students find playing partners or form teams for various sports.
 
-You can put the things to be shown in GitHub pages into the _docs/_ folder. Both html and md file formats are supported. You need to go to settings and enable GitHub pages and select _main_ branch and _docs_ folder from the dropdowns, as shown in the below image.
+Additionally, the system will allow users to create and join tournaments, publish event announcements and flyers, and provide live score updates for official matches and inter-university competitions.
 
-![image](https://user-images.githubusercontent.com/11540782/98789936-028d3600-2429-11eb-84be-aaba665fdc75.png)
+## Core Features
 
-### Special Configurations
+- User authentication and secure login  
+- Sports equipment issuing and inventory tracking  
+- Court and venue availability monitoring  
+- Player and team matchmaking for sports activities  
+- Tournament creation and registration  
+- Event announcements and gym schedule updates  
+- Live score updates for official matches  
 
-These projects will be automatically added into [https://projects.ce.pdn.ac.lk](). If you like to show more details about your project on this site, you can fill the parameters in the file, _/docs/index.json_
+## Technology Stack
 
-```
-{
-  "title": "This is the title of the project",
-  "team": [
-    {
-      "name": "Team Member Name 1",
-      "email": "email@eng.pdn.ac.lk",
-      "eNumber": "E/yy/xxx"
-    },
-    {
-      "name": "Team Member Name 2",
-      "email": "email@eng.pdn.ac.lk",
-      "eNumber": "E/yy/xxx"
-    },
-    {
-      "name": "Team Member Name 3",
-      "email": "email@eng.pdn.ac.lk",
-      "eNumber": "E/yy/xxx"
-    }
-  ],
-  "supervisors": [
-    {
-      "name": "Dr. Supervisor 1",
-      "email": "email@eng.pdn.ac.lk"
-    },
-    {
-      "name": "Supervisor 2",
-      "email": "email@eng.pdn.ac.lk"
-    }
-  ],
-  "tags": ["Web", "Software Systems", "CO2060"]
-}
-```
+- **Frontend:** HTML, CSS, JavaScript  
+- **Backend:** Node.js with Express  
+- **Database:** PostgreSQL  
+- **Authentication:** Firebase Authentication  
+- **Version Control & Collaboration:** GitHub  
 
-Once you filled this _index.json_ file, please verify the syntax is correct. (You can use [this](https://jsonlint.com/) tool).
+## Project Information
 
-### Page Theme
+This project is developed as part of:
 
-A custom theme integrated with this GitHub Page, which is based on [github.com/cepdnaclk/eYY-project-theme](https://github.com/cepdnaclk/eYY-project-theme). If you like to remove this default theme, you can remove the file, _docs/\_config.yml_ and use HTML based website.
+**CO2060 – Software Systems Design Project**  
+Department of Computer Engineering  
+University of Peradeniya  
+
+## Team Members
+
+- E/22/018 – A. C. F. Akeela  
+- E/22/157 – R. V. Jayalath  
+- E/22/402 – H. P. P. E. Umanda  
+- E/22/425 – D. S. Wellage  
+
+## Links
+
+- Department Projects Page: https://projects.ce.pdn.ac.lk  
+- GitHub Repository: https://github.com/cepdnaclk/
