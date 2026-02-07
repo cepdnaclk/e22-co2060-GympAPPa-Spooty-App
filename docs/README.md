@@ -3,7 +3,7 @@ layout: home
 permalink: index.html
 
 # Please update this with your repository name and project title
-repository-name: e22-co2060-GympAPPa-Spooty-App
+repository-name: e22-co2060-gympappa-spooty-app
 title: GympAPPa Spooty App – Pera Sports & Gymnasium Management System
 ---
 

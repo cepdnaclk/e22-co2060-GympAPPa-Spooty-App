@@ -1,4 +1,6 @@
 {
+    "title": "GympAPPa Spooty App – Pera Sports & Gymnasium Management System",
+
     "team": [
         {
             "name": "A. C. F. Akeela",
@@ -32,6 +34,6 @@
         }
     ],
     "tags": ["Web", "Software Systems", "CO2060"],
-    "image":"cover_page.jpg",
-    "thumbnail":"thumbnail.jpg"
+    "image":"cover_page.png",
+    "thumbnail":"thumbnail.png"
 }
