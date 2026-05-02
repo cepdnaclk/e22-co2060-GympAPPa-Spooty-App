@@ -73,20 +73,10 @@ export const requestEquipment = async (req, res) => {
       });
     }
 
-    // Check availability
-    const availQuery = 'SELECT remaining_quantity FROM sport_equipment WHERE id = $1';
-    const availResult = await pool.query(availQuery, [equipment_id]);
-    if (availResult.rows.length === 0) {
-      return res.status(404).json({ message: 'Equipment not found' });
-    }
-    if (parseInt(availResult.rows[0].remaining_quantity) < quantity) {
-      return res.status(400).json({ message: 'Insufficient quantity available' });
-    }
-
     // Insert request
     const insertQuery = `
       INSERT INTO requested_equipment (student_id, equipment_id, quantity, pickup_time, status)
-      VALUES ($1, $2, $3, $4, 'issued') RETURNING id
+      VALUES ($1, $2, $3, $4, 'pending') RETURNING id
     `;
     const insertResult = await pool.query(insertQuery, [studentId, equipment_id, quantity, pickupTime]);
 
@@ -116,13 +106,9 @@ export const cancelRequest = async (req, res) => {
     }
 
     const request = requestResult.rows[0];
-    if (request.status !== 'issued') {
+    if (request.status !== 'pending') {
       return res.status(400).json({ message: 'Cannot cancel this request' });
     }
-
-    // Restore quantity
-    const updateQuery = 'UPDATE sport_equipment SET remaining_quantity = remaining_quantity + $1 WHERE id = $2';
-    await pool.query(updateQuery, [request.quantity, request.equipment_id]);
 
     // Delete request
     const deleteQuery = 'DELETE FROM requested_equipment WHERE id = $1';
@@ -174,7 +160,7 @@ export const getStudentHistory = async (req, res) => {
       JOIN sport_equipment se ON re.equipment_id = se.id
       JOIN sports s ON se.sport_id = s.id
       WHERE re.student_id = $1
-      ORDER BY re.requested_at DESC
+      ORDER BY LOWER(REPLACE(re.student_id, '/', '')), re.requested_at DESC
     `;
     const result = await pool.query(query, [studentId]);
 
@@ -212,25 +198,45 @@ export const initiateReturn = async (req, res) => {
  */
 export const approveReturn = async (req, res) => {
   const { requestId } = req.params;
+  const { quantity } = req.body || {};
 
   try {
-    const requestQuery = "SELECT * FROM requested_equipment WHERE id = $1 AND status = 'pending_return'";
+    const requestQuery = "SELECT * FROM requested_equipment WHERE id = $1 AND status IN ('pending_return', 'issued')";
     const requestResult = await pool.query(requestQuery, [requestId]);
     if (requestResult.rows.length === 0) {
       return res.status(404).json({ message: 'Pending return request not found' });
     }
 
     const request = requestResult.rows[0];
+    const issuedQuantity = Number(request.issued_quantity ?? request.quantity ?? 0);
+    const alreadyReturned = Number(request.returned_quantity ?? 0);
+    const outstanding = Math.max(issuedQuantity - alreadyReturned, 0);
+    const returnQuantity = Number(quantity ?? outstanding);
 
-    // Update status to returned
-    const updateStatusQuery = "UPDATE requested_equipment SET status = 'returned' WHERE id = $1";
-    await pool.query(updateStatusQuery, [requestId]);
+    if (!Number.isInteger(returnQuantity) || returnQuantity <= 0) {
+      return res.status(400).json({ message: 'Return quantity must be a positive integer' });
+    }
+
+    if (returnQuantity > outstanding) {
+      return res.status(400).json({ message: `Cannot return more than the outstanding quantity (${outstanding})` });
+    }
+
+    const nextReturned = alreadyReturned + returnQuantity;
+    const nextStatus = nextReturned >= issuedQuantity ? 'returned' : 'pending_return';
+
+    // Update status to returned/pending_return
+    const updateStatusQuery = "UPDATE requested_equipment SET status = $2, returned_quantity = COALESCE(returned_quantity, 0) + $3 WHERE id = $1";
+    await pool.query(updateStatusQuery, [requestId, nextStatus, returnQuantity]);
 
     // Restore quantity
     const updateQuantityQuery = 'UPDATE sport_equipment SET remaining_quantity = remaining_quantity + $1 WHERE id = $2';
-    await pool.query(updateQuantityQuery, [request.quantity, request.equipment_id]);
+    await pool.query(updateQuantityQuery, [returnQuantity, request.equipment_id]);
 
-    res.json({ message: 'Return approved successfully' });
+    res.json({
+      message: 'Return approved successfully',
+      returned_quantity: returnQuantity,
+      status: nextStatus,
+    });
   } catch (error) {
     console.error('Error approving return:', error);
     res.status(500).json({ message: 'Error approving return', error: error.message });

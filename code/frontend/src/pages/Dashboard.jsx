@@ -24,8 +24,8 @@ const statusStyle = (status) => {
 const statusLabel = (status) => {
   switch (status) {
     case 'pending':        return '⏳ Pending Approval';
-    case 'issued':         return '✅ Approved - Collect from staff';
-    case 'pending_return': return '📦 Return to staff';
+    case 'issued':         return '📦 Collected';
+    case 'pending_return': return '🔄 Return in Progress';
     case 'returned':       return '↩️ Returned';
     case 'cancelled':      return '🚫 Declined';
     default:               return '⏳ Pending';
@@ -50,6 +50,9 @@ const Dashboard = () => {
   const [error, setError]           = useState(null);
   const [cancelling, setCancelling] = useState(null);
   const [toast, setToast]           = useState(null);
+  const [availability, setAvailability] = useState({});
+  const [searchTerm, setSearchTerm] = useState('');
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
 
   const user      = getStoredUser();
   const role      = user?.role || '';
@@ -73,8 +76,23 @@ const Dashboard = () => {
     }
   };
 
+  const fetchAvailability = async () => {
+    setAvailabilityLoading(true);
+    try {
+      const response = await equipmentAPI.getAll();
+      setAvailability(response.data || {});
+    } catch {
+      setAvailability({});
+    } finally {
+      setAvailabilityLoading(false);
+    }
+  };
+
   useEffect(() => {
-    if (role === 'student') fetchHistory();
+    if (role === 'student') {
+      fetchHistory();
+      fetchAvailability();
+    }
     else setLoading(false);
   }, []);
 
@@ -170,6 +188,53 @@ const Dashboard = () => {
       </div>
 
       <div className="template-content">
+
+        <div className="template-section">
+          <h2 style={{ marginBottom: '12px' }}>🏅 Current Equipment Availability</h2>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', alignItems: 'center' }}>
+            <input
+              type="text"
+              placeholder="Search equipment — e.g. Racket, Shuttlecock"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ flex: 1, padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--color-border)' }}
+            />
+            <button className="btn-secondary" onClick={() => setSearchTerm('')}>Clear</button>
+          </div>
+          {availabilityLoading && <p style={{ color: 'var(--color-text-light)' }}>⏳ Loading availability...</p>}
+          {!availabilityLoading && Object.keys(availability).length === 0 && (
+            <p style={{ color: 'var(--color-text-light)' }}>No availability data available.</p>
+          )}
+          {!availabilityLoading && Object.keys(availability).length > 0 && (
+            <div style={{ display: 'grid', gap: '16px' }}>
+              {Object.keys(availability).sort().map((sportName) => {
+                const items = availability[sportName] || [];
+                // if searchTerm present, only show sports that have matching equipment
+                const filteredItems = searchTerm.trim()
+                  ? items.filter(i => i.display_name?.toLowerCase().includes(searchTerm.toLowerCase()) || i.equipment_name?.toLowerCase().includes(searchTerm.toLowerCase()))
+                  : items;
+                if (filteredItems.length === 0) return null;
+
+                return (
+                  <div key={sportName} style={{ border: '1px solid var(--color-border)', borderRadius: '10px', padding: '12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                      <strong>{sportName}</strong>
+                      <span style={{ color: 'var(--color-text-light)' }}>{filteredItems.length} item{filteredItems.length !== 1 ? 's' : ''}</span>
+                    </div>
+                    <div style={{ marginTop: '8px', display: 'grid', gap: '8px' }}>
+                      {filteredItems.map(item => (
+                        <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', borderRadius: '6px', background: 'var(--color-bg)' }}>
+                          <div style={{ fontWeight: 600 }}>{item.display_name || item.equipment_name}</div>
+                          <div style={{ color: item.remaining_quantity > 0 ? 'var(--color-green)' : 'var(--color-pink)' }}>{item.remaining_quantity}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
         <div className="template-section">
           <h2 style={{ marginBottom: '20px' }}>📋 My Equipment Request History</h2>
 
@@ -204,7 +269,7 @@ const Dashboard = () => {
                     <tr key={item.id}>
                       <td>{item.sport_name}</td>
                       <td><strong>{item.display_name}</strong></td>
-                      <td style={{ textAlign: 'center' }}>{item.quantity}</td>
+                      <td style={{ textAlign: 'center' }}>{item.issued_quantity ?? item.quantity}</td>
                       <td>{formatTime(item.pickup_time)}</td>
                       <td>
                         <span style={{

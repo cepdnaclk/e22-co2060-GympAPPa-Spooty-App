@@ -151,29 +151,14 @@ const RequestEquipment = () => {
         )
       );
 
-      // Update local state with new quantities
-      setEquipmentBySport(prev => {
-        const updated = { ...prev };
-        Object.keys(updated).forEach(sport => {
-          updated[sport] = updated[sport].map(eq => {
-            const requested = requestCounts[eq.id];
-            if (requested) {
-              return { ...eq, remaining_quantity: eq.remaining_quantity - requested };
-            }
-            return eq;
-          });
-        });
-        return updated;
-      });
-
       showToast('⏳ Pending — your request has been submitted and is awaiting approval.', 'pending');
       setRequestCounts({});
       setPickupTime('');
       setTimeError('');
-      } catch (err) {
+    } catch (err) {
       const message = err.response?.data?.message || 'Network error. Please try again.';
       showToast(`❌ ${message}`, 'error');
-      }finally {
+    } finally {
       setSubmitting(false);
     }
   };

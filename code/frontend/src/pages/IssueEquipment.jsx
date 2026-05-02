@@ -94,134 +94,53 @@ function IssueEquipment() {
             ══════════════════════════════════════════ */}
             <div className="issue-top-section">
 
-                {/* Page heading */}
-                <div className="issue-heading">
-                    <h2 className="page-title">Issue Equipment</h2>
-                    <p className="page-subtitle">
-                        Search for a student by registration number to view and process their equipment requests.
-                    </p>
-                </div>
-
-                {/* Search bar — wide and centered */}
-                <div className="issue-search-wrap">
-                    <input
-                        type="text"
-                        className="issue-search-input"
-                        placeholder="Enter Registration Number  —  e.g.  E/22/402   |   Mgt/22/101   |   S/22/301   |   A/22/205"
-                        value={regNumber}
-                        onChange={(e) => setRegNumber(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                    />
-                    <button
-                        className="btn-primary issue-search-btn"
-                        onClick={handleSearch}
-                        disabled={loading}
-                    >
-                        {loading ? 'Searching...' : 'Search Student'}
-                    </button>
-                </div>
-
-                {/* Errors */}
-                {searchError && (
-                    <div className="error-message" style={{ marginTop: '12px' }}>{searchError}</div>
-                )}
-                {actionMsg && (
-                    <div className="success-message" style={{ marginTop: '12px' }}>{actionMsg}</div>
-                )}
-                {actionError && (
-                    <div className="error-message" style={{ marginTop: '12px' }}>{actionError}</div>
-                )}
-
-                {/* Student found card */}
-                {studentId && (
-                    <div className="student-found-bar">
-                        <div className="student-avatar" style={{ width: '52px', height: '52px', fontSize: '22px' }}>
-                            {studentId.charAt(0).toUpperCase()}
-                        </div>
-                        <div style={{ flex: 1 }}>
-                            <p className="student-name">{studentId}</p>
-                            <p className="student-meta">
-                                {requests.length > 0
-                                    ? `${requests.length} pending request${requests.length !== 1 ? 's' : ''} found`
-                                    : 'No pending requests'}
-                            </p>
-                        </div>
-                        <span className="eq-badge badge-info">✓ Registered in GympAPPa</span>
-                    </div>
-                )}
+                            <div className="issue-heading">
+                                <h2 className="page-title">Equipment Stock Overview</h2>
+                                <p className="page-subtitle">Current availability of all sports equipment.</p>
+                            </div>
             </div>
 
-            {/* ══════════════════════════════════════════
-                PENDING REQUESTS — full width cards
-            ══════════════════════════════════════════ */}
-            {requests.length > 0 && (
-                <div className="issue-section">
-                    <div className="issue-section-header">
-                        <h3 className="issue-section-title">Pending Requests — {studentId}</h3>
-                        <p className="issue-section-sub">Review and accept or decline each request below.</p>
-                    </div>
-
-                    {/* Requests in a responsive grid */}
-                    <div className="requests-grid">
-                        {requests.map((req) => {
-                            const canIssue = Number(req.remaining_quantity) >= Number(req.quantity);
-                            return (
-                                <div key={req.request_id} className={`request-grid-card ${!canIssue ? 'request-no-stock' : ''}`}>
-
-                                    {/* Equipment name + sport */}
-                                    <div className="rgc-header">
-                                        <p className="rgc-name">{req.equipment_name}</p>
-                                        <span className="rgc-sport">{req.sport_name}</span>
-                                    </div>
-
-                                    {/* Qty row */}
-                                    <div className="rgc-qty-row">
-                                        <div className="rgc-qty-box">
-                                            <span className="rgc-qty-num">{req.quantity}</span>
-                                            <span className="rgc-qty-lbl">Requested</span>
-                                        </div>
-                                        <div className="rgc-qty-arrow">→</div>
-                                        <div className="rgc-qty-box">
-                                            <span className="rgc-qty-num" style={{ color: canIssue ? 'var(--color-green)' : 'var(--color-pink)' }}>
-                                                {req.remaining_quantity}
-                                            </span>
-                                            <span className="rgc-qty-lbl">In Stock</span>
-                                        </div>
-                                    </div>
-
-                                    {/* Requested time */}
-                                    <p className="rgc-time">Requested: {formatDateTime(req.requested_at)}</p>
-
-                                    {/* Warning if not enough stock */}
-                                    {!canIssue && (
-                                        <p className="rgc-warn">⚠ Not enough stock to issue</p>
-                                    )}
-
-                                    {/* Action buttons */}
-                                    <div className="rgc-actions">
-                                        <button
-                                            className="btn-primary"
-                                            style={{ flex: 1, opacity: canIssue ? 1 : 0.4 }}
-                                            onClick={() => handleAccept(req.request_id, req.equipment_name, req.quantity, req.remaining_quantity)}
-                                            disabled={loading || !canIssue}
-                                        >
-                                            ✓ Accept
-                                        </button>
-                                        <button
-                                            className="btn-secondary"
-                                            style={{ flex: 1 }}
-                                            onClick={() => handleDecline(req.request_id, req.equipment_name)}
-                                            disabled={loading}
-                                        >
-                                            ✗ Decline
-                                        </button>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
+            {/* STOCK grouped by sport — show equipment name + available count */}
+            <div className="issue-section">
+                <div className="issue-section-header">
+                    <h3 className="issue-section-title">All Equipment — Grouped by Sport</h3>
+                    <p className="issue-section-sub">List of equipment and current available counts per sport.</p>
                 </div>
-            )}
+
+                {equipmentList.length === 0 ? (
+                    <p style={{ color: 'var(--color-text-light)' }}>No stock data available.</p>
+                ) : (
+                    (() => {
+                        const grouped = equipmentList.reduce((acc, item) => {
+                            const sport = item.sport_name || '—';
+                            acc[sport] = acc[sport] || [];
+                            acc[sport].push(item);
+                            return acc;
+                        }, {});
+
+                        return (
+                            <div style={{ display: 'grid', gap: '16px' }}>
+                                {Object.keys(grouped).map(sport => (
+                                    <div key={sport} style={{ border: '1px solid var(--color-border)', borderRadius: '10px', padding: '12px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <strong>{sport}</strong>
+                                            <span style={{ color: 'var(--color-text-light)' }}>{grouped[sport].length} item{grouped[sport].length !== 1 ? 's' : ''}</span>
+                                        </div>
+                                        <div style={{ marginTop: '10px', display: 'grid', gap: '8px' }}>
+                                            {grouped[sport].map(eq => (
+                                                <div key={eq.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', borderRadius: '6px', background: 'var(--color-bg)' }}>
+                                                    <div style={{ fontWeight: 600 }}>{eq.equipment_name}</div>
+                                                    <div style={{ color: eq.remaining_quantity > 0 ? 'var(--color-green)' : 'var(--color-pink)' }}>{eq.remaining_quantity}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        );
+                    })()
+                )}
+            </div>
 
             {/* ══════════════════════════════════════════
                 STOCK OVERVIEW — full width table

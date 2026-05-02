@@ -98,9 +98,11 @@ CREATE TABLE requested_equipment (
   student_id VARCHAR(50) NOT NULL,
   equipment_id INT NOT NULL,
   quantity INT NOT NULL DEFAULT 1,
+  issued_quantity INT NOT NULL DEFAULT 0,
+  returned_quantity INT NOT NULL DEFAULT 0,
   pickup_time VARCHAR(50) NOT NULL,
-  status VARCHAR(20) DEFAULT 'issued'
-    CHECK (status IN ('issued', 'pending_return', 'returned')),
+  status VARCHAR(20) DEFAULT 'pending'
+    CHECK (status IN ('pending', 'issued', 'pending_return', 'returned', 'cancelled')),
   requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
   FOREIGN KEY (equipment_id) REFERENCES sport_equipment(id) ON DELETE CASCADE

@@ -3,6 +3,7 @@ const router = express.Router();
 
 import {
     getStudentRequests,
+    getAllRequests,
     getAllEquipment,
     acceptRequest,
     declineRequest,
@@ -12,6 +13,9 @@ import {
 } from '../controllers/adminController.js';
 
 import { authenticateToken, authorizeRole } from '../middleware/auth.js';
+
+// Get all active requests (pending/issued/pending_return)
+router.get('/requests', authenticateToken, getAllRequests);
 
 // Get all pending requests for a student by reg number
 // e.g. GET /api/admin/requests/E%2F22%2F402

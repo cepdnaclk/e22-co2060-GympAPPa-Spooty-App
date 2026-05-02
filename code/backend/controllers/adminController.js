@@ -6,6 +6,10 @@ const normalizeRegNumber = (regNumber) => {
     return regNumber.replace(/\//g, '').toLowerCase();
 };
 
+const getEffectiveQuantity = (request) => {
+    return Number(request.issued_quantity ?? request.quantity ?? 0);
+};
+
 // ─────────────────────────────────────────────
 // 1. GET STUDENT REQUESTS BY REGISTRATION NUMBER
 //    URL: GET /api/admin/requests/:regNumber
@@ -70,6 +74,40 @@ export const getStudentRequests = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────
+// GET ALL ACTIVE REQUESTS (pending / issued / pending_return)
+// URL: GET /api/admin/requests
+// ─────────────────────────────────────────────
+export const getAllRequests = async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT
+                re.id AS request_id,
+                re.student_id,
+                re.quantity,
+                re.issued_quantity,
+                re.returned_quantity,
+                re.pickup_time,
+                re.status,
+                re.requested_at,
+                se.display_name AS equipment_name,
+                se.remaining_quantity,
+                se.id AS sport_equipment_id,
+                s.name AS sport_name
+             FROM requested_equipment re
+             JOIN sport_equipment se ON re.equipment_id = se.id
+             JOIN sports s ON se.sport_id = s.id
+             ORDER BY LOWER(REPLACE(re.student_id, '/', '')), re.requested_at DESC`
+        );
+
+        res.json({ success: true, requests: result.rows });
+
+    } catch (error) {
+        console.error('Error fetching active requests:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+// ─────────────────────────────────────────────
 // 2. GET ALL EQUIPMENT WITH AVAILABILITY
 //    URL: GET /api/admin/list
 // ─────────────────────────────────────────────
@@ -108,6 +146,7 @@ export const acceptRequest = async (req, res) => {
 
     try {
         const { requestId } = req.params;
+        const { quantity } = req.body || {};
 
         await client.query('BEGIN');
 
@@ -134,33 +173,54 @@ export const acceptRequest = async (req, res) => {
             });
         }
 
-        if (request.remaining_quantity < request.quantity) {
+        const requestedQuantity = Number(request.quantity);
+        const issueQuantity = Number(quantity ?? requestedQuantity);
+
+        if (!Number.isInteger(issueQuantity) || issueQuantity <= 0) {
             await client.query('ROLLBACK');
             return res.status(400).json({
                 success: false,
-                message: `Not enough stock. Only ${request.remaining_quantity} ${request.display_name}(s) available. Student requested ${request.quantity}.`
+                message: 'Issue quantity must be a positive integer.'
+            });
+        }
+
+        if (issueQuantity > requestedQuantity) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: `You cannot issue more than the requested quantity (${requestedQuantity}).`
+            });
+        }
+
+        if (request.remaining_quantity < issueQuantity) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: `Not enough stock. Only ${request.remaining_quantity} ${request.display_name}(s) available. Requested issue quantity is ${issueQuantity}.`
             });
         }
 
         await client.query(
             `UPDATE requested_equipment
-             SET status = 'issued'
+             SET status = 'issued',
+                 issued_quantity = $2
              WHERE id = $1`,
-            [requestId]
+            [requestId, issueQuantity]
         );
 
         await client.query(
             `UPDATE sport_equipment
              SET remaining_quantity = remaining_quantity - $1
              WHERE id = $2`,
-            [request.quantity, request.sport_equipment_id]
+            [issueQuantity, request.sport_equipment_id]
         );
 
         await client.query('COMMIT');
 
         res.json({
             success: true,
-            message: `✓ ${request.display_name} issued to ${request.student_id} successfully!`
+            message: `✓ ${issueQuantity} ${request.display_name}(s) issued to ${request.student_id} successfully!`,
+            issued_quantity: issueQuantity
         });
 
     } catch (error) {
@@ -228,6 +288,7 @@ export const processReturn = async (req, res) => {
 
     try {
         const { requestId } = req.params;
+        const { quantity } = req.body || {};
 
         await client.query('BEGIN');
 
@@ -245,8 +306,29 @@ export const processReturn = async (req, res) => {
         }
 
         const request = requestCheck.rows[0];
+        const issuedQuantity = getEffectiveQuantity(request);
+        const alreadyReturned = Number(request.returned_quantity || 0);
+        const outstanding = issuedQuantity - alreadyReturned;
 
-        if (request.status !== 'issued') {
+        const returnQuantity = Number(quantity ?? outstanding);
+
+        if (!Number.isInteger(returnQuantity) || returnQuantity <= 0) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: 'Return quantity must be a positive integer.'
+            });
+        }
+
+        if (returnQuantity > outstanding) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: `Cannot return more than the outstanding quantity (${outstanding}).`
+            });
+        }
+
+        if (!['issued', 'pending_return'].includes(request.status)) {
             await client.query('ROLLBACK');
             return res.status(400).json({
                 success: false,
@@ -256,25 +338,31 @@ export const processReturn = async (req, res) => {
             });
         }
 
+        const newReturned = alreadyReturned + returnQuantity;
+        const newStatus = newReturned >= issuedQuantity ? 'returned' : 'pending_return';
+
         await client.query(
             `UPDATE requested_equipment
-             SET status = 'returned'
+             SET status = $2,
+                 returned_quantity = COALESCE(returned_quantity, 0) + $3
              WHERE id = $1`,
-            [requestId]
+            [requestId, newStatus, returnQuantity]
         );
 
         await client.query(
             `UPDATE sport_equipment
              SET remaining_quantity = remaining_quantity + $1
              WHERE id = $2`,
-            [request.quantity, request.sport_equipment_id]
+            [returnQuantity, request.sport_equipment_id]
         );
 
         await client.query('COMMIT');
 
         res.json({
             success: true,
-            message: `✓ ${request.display_name} returned successfully by ${request.student_id}!`
+            message: `✓ ${returnQuantity} ${request.display_name}(s) returned successfully by ${request.student_id}!`,
+            returned_quantity: returnQuantity,
+            status: newStatus
         });
 
     } catch (error) {

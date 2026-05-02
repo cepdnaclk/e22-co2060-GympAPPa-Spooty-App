@@ -64,10 +64,11 @@ export const manageAPI = {
 
 export const adminAPI = {
   getRequests: (regNumber) => api.get(`/admin/requests/${regNumber}`),
+  getAllRequests: () => api.get('/admin/requests'),
   getAllEquipment: () => api.get('/admin/list'),
-  acceptRequest: (id) => api.post(`/admin/accept/${id}`),
+  acceptRequest: (id, data = {}) => api.post(`/admin/accept/${id}`, data),
   declineRequest: (id) => api.post(`/admin/decline/${id}`),
-  returnEquipment: (id) => api.post(`/admin/return/${id}`),
+  returnEquipment: (id, data = {}) => api.post(`/admin/return/${id}`, data),
   getPendingReturns: (regNumber) => api.get(`/admin/pending-return/${regNumber}`),
   getHistory: (regNumber) => api.get(`/admin/history/${regNumber}`),
 };

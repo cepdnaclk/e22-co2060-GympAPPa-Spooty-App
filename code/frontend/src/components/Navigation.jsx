@@ -17,10 +17,10 @@ const Navigation = ({ role }) => {
       { label: 'Manage Equipment', path: '/manage-equipment', roles: ['admin'] },
       { label: 'Add Equipment', path: '/add-equipment', roles: ['admin'] },
 
-      // Counter staff only items
-      { label: 'Issue Equipment', path: '/issue-equipment', roles: ['counter-staff'] },
-      { label: 'Return Equipment', path: '/return-equipment', roles: ['counter-staff'] },
-      { label: 'My Issued Items', path: '/my-issued-items', roles: ['counter-staff'] },
+      // Counter staff only items (consolidated)
+      { label: 'Equipment Stock Overview', path: '/issue-equipment', roles: ['counter-staff'] },
+      { label: 'Issue / Return Equipment', path: '/staff-equipment', roles: ['counter-staff'] },
+      { label: 'Issued Items History', path: '/my-issued-items', roles: ['counter-staff'] },
 
       // Everyone sees Profile
       { label: 'Profile', path: '/profile', roles: ['student', 'games-captain', 'admin', 'counter-staff', 'psu', 'faculty-cordinator', 'coach', 'private-coach', 'academic-staff'] },

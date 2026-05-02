@@ -12,7 +12,7 @@ import Profile from './pages/Profile';
 import ManageEquipment from './pages/ManageEquipment';
 import AddEquipment from './pages/AddEquipment';
 import IssueEquipment from './pages/IssueEquipment';
-import ReturnEquipment from './pages/ReturnEquipment';
+import StaffEquipment from './pages/StaffEquipment';
 import MyIssuedItems from './pages/MyIssuedItems';
 import './styles/App.css';
 
@@ -89,7 +89,7 @@ function App() {
             <Route path="/manage-equipment" element={<ProtectedRoute element={<ManageEquipment />} />} />
             <Route path="/add-equipment" element={<ProtectedRoute element={<AddEquipment />} />} />
             <Route path="/issue-equipment" element={<ProtectedRoute element={<IssueEquipment />} />} />
-            <Route path="/return-equipment" element={<ProtectedRoute element={<ReturnEquipment />} />} />
+            <Route path="/staff-equipment" element={<ProtectedRoute element={<StaffEquipment />} />} />
             <Route path="/my-issued-items" element={<ProtectedRoute element={<MyIssuedItems />} />} />
             <Route path="/" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />
             <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />
