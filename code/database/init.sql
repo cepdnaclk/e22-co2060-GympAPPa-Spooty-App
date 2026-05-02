@@ -174,19 +174,3 @@ INSERT INTO sport_equipment (sport_id, equipment_id, display_name, total_quantit
 (13, 10, 'Javelin', 10, 10),
 (13, 11, 'Shot Put', 10, 10),
 (5, 12, 'Chess Clock', 10, 10);
-
--- =========================
--- SAMPLE USERS FOR DEMO
--- =========================
-
-INSERT INTO "user" (user_id, role, university_email, name, password, password_set, auth_provider)
-VALUES
-('e22001', 'student', 'e22001@eng.pdn.ac.lk', 'Student One', 'pass123', TRUE, 'password'),
-('e22002', 'games-captain', 'e22002@eng.pdn.ac.lk', 'Games Captain', 'pass123', TRUE, 'password'),
-('admin01', 'admin', 'admin@gympappa.com', 'System Admin', 'admin123', TRUE, 'password'),
-('staff01', 'counter-staff', 'staff@gympappa.com', 'Counter Staff', 'staff123', TRUE, 'password'),
-('psu01', 'psu@gympappa.com', 'PSU Officer', 'psu123', TRUE, 'password'),
-('fc01', 'faculty-coordinator', 'fc@eng.pdn.ac.lk', 'Faculty Coordinator', 'fc123', TRUE, 'password'),
-('coach01', 'coach@gympappa.com', 'University Coach', 'coach123', TRUE, 'password'),
-('pcoach01', 'private-coach@gympappa.com', 'Private Coach', 'coach123', TRUE, 'password'),
-('acad01', 'academic-staff', 'staff@eng.pdn.ac.lk', 'Academic Staff', 'acad123', TRUE, 'password');

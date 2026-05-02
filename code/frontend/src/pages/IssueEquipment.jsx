@@ -1,209 +1,168 @@
-import React, { useState, useEffect } from 'react';
-import { adminAPI, equipmentAPI } from '../utils/api';
+import React, { useEffect, useMemo, useState } from 'react';
+import { adminAPI } from '../utils/api';
 import '../styles/template.css';
 import '../styles/equipment.css';
 
 function IssueEquipment() {
-    const [regNumber,     setRegNumber]     = useState('');
-    const [requests,      setRequests]      = useState([]);
-    const [studentId,     setStudentId]     = useState('');
-    const [searchError,   setSearchError]   = useState('');
     const [equipmentList, setEquipmentList] = useState([]);
-    const [loading,       setLoading]       = useState(false);
-    const [actionMsg,     setActionMsg]     = useState('');
-    const [actionError,   setActionError]   = useState('');
+    const [loading, setLoading] = useState(false);
+    const [searchText, setSearchText] = useState('');
+    const [filters, setFilters] = useState({
+        equipment: '',
+        sport: '',
+        total: '',
+        available: '',
+        status: 'all',
+        returnStatus: 'all',
+    });
 
     useEffect(() => { fetchEquipmentList() }, []);
 
     const fetchEquipmentList = async () => {
+        setLoading(true);
         try {
             const response = await adminAPI.getAllEquipment();
-            setEquipmentList(response.data.equipment);
+            setEquipmentList(response.data.equipment || []);
         } catch (err) { console.error('Failed to load equipment list:', err); }
+        finally { setLoading(false); }
     };
 
-    const handleSearch = async () => {
-        setRequests([]); setStudentId(''); setSearchError(''); setActionMsg(''); setActionError('');
-        if (!regNumber.trim()) { setSearchError('Please enter a registration number.'); return }
-        setLoading(true);
-        try {
-            const response = await adminAPI.getRequests(regNumber.trim());
-            setStudentId(response.data.student_id);
-            setRequests(response.data.requests);
-        } catch (err) {
-            setSearchError(err.response?.data?.message || 'Could not connect to server.');
-        } finally {
-            setLoading(false);
-        }
+    const normalize = (value = '') => String(value).toLowerCase().trim();
+
+    const visibleEquipment = useMemo(() => {
+        const query = normalize(searchText);
+
+        return [...equipmentList]
+            .sort((left, right) => {
+                const sportCompare = (left.sport_name || '').localeCompare(right.sport_name || '');
+                if (sportCompare !== 0) return sportCompare;
+                return (left.equipment_name || '').localeCompare(right.equipment_name || '');
+            })
+            .filter((item) => {
+                const available = Number(item.remaining_quantity || 0);
+                const total = Number(item.total_quantity || 0);
+                const status = available > 0 ? 'available' : 'out of stock';
+                const returnStatus = available >= total ? 'returned' : 'pending';
+
+                if (query) {
+                    const haystack = [
+                        item.equipment_name,
+                        item.sport_name,
+                        item.total_quantity,
+                        item.remaining_quantity,
+                        status,
+                        returnStatus,
+                    ].join(' ');
+                    if (!normalize(haystack).includes(query)) return false;
+                }
+
+                if (filters.equipment && !normalize(item.equipment_name).includes(normalize(filters.equipment))) return false;
+                if (filters.sport && !normalize(item.sport_name).includes(normalize(filters.sport))) return false;
+                if (filters.total && !String(total).includes(normalize(filters.total))) return false;
+                if (filters.available && !String(available).includes(normalize(filters.available))) return false;
+                if (filters.status !== 'all' && status !== filters.status) return false;
+                if (filters.returnStatus !== 'all' && returnStatus !== filters.returnStatus) return false;
+
+                return true;
+            });
+    }, [equipmentList, filters, searchText]);
+
+    const setFilter = (key, value) => {
+        setFilters((prev) => ({ ...prev, [key]: value }));
     };
 
-    const handleAccept = async (requestId, equipmentName, quantity, available) => {
-        setActionMsg(''); setActionError('');
-        if (available < quantity) {
-            setActionError(`Cannot accept: Only ${available} ${equipmentName}(s) available, student requested ${quantity}.`);
-            return;
-        }
-        if (!window.confirm(`Issue ${quantity}x ${equipmentName} to ${studentId}?`)) return;
-        setLoading(true);
-        try {
-            const response = await adminAPI.acceptRequest(requestId);
-            setActionMsg(response.data.message);
-            setRequests(prev => prev.filter(r => r.request_id !== requestId));
-            fetchEquipmentList();
-        } catch (err) {
-            setActionError(err.response?.data?.message || 'Could not connect to server.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleDecline = async (requestId, equipmentName) => {
-        setActionMsg(''); setActionError('');
-        if (!window.confirm(`Decline request for ${equipmentName} from ${studentId}?`)) return;
-        setLoading(true);
-        try {
-            const response = await adminAPI.declineRequest(requestId);
-            setActionMsg(response.data.message);
-            setRequests(prev => prev.filter(r => r.request_id !== requestId));
-        } catch (err) {
-            setActionError(err.response?.data?.message || 'Could not connect to server.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const formatDateTime = (ts) => {
-        if (!ts) return '—';
-        return new Date(ts).toLocaleString('en-LK', {
-            year: 'numeric', month: 'short', day: 'numeric',
-            hour: '2-digit', minute: '2-digit'
-        });
-    };
-
-    const grandTotal     = equipmentList.reduce((s, i) => s + Number(i.total_quantity),     0);
-    const grandAvailable = equipmentList.reduce((s, i) => s + Number(i.remaining_quantity), 0);
-    const grandIssued    = equipmentList.reduce((s, i) => s + Number(i.issued_count),        0);
-
-    const getSportName = (item) => item.sport_name || '—';
+    const getStatus = (item) => (Number(item.remaining_quantity || 0) > 0 ? 'Available' : 'Out of Stock');
+    const getStatusKey = (item) => (Number(item.remaining_quantity || 0) > 0 ? 'available' : 'out of stock');
+    const getReturnState = (item) => (Number(item.remaining_quantity || 0) >= Number(item.total_quantity || 0) ? 'Returned' : 'Pending');
+    const getReturnStateKey = (item) => (Number(item.remaining_quantity || 0) >= Number(item.total_quantity || 0) ? 'returned' : 'pending');
 
     return (
         <div style={{ width: '100%' }}>
-
-            {/* ══════════════════════════════════════════
-                TOP SECTION — full width search area
-            ══════════════════════════════════════════ */}
-            <div className="issue-top-section">
-
-                            <div className="issue-heading">
-                                <h2 className="page-title">Equipment Stock Overview</h2>
-                                <p className="page-subtitle">Current availability of all sports equipment.</p>
-                            </div>
-            </div>
-
-            {/* STOCK grouped by sport — show equipment name + available count */}
             <div className="issue-section">
                 <div className="issue-section-header">
-                    <h3 className="issue-section-title">All Equipment — Grouped by Sport</h3>
-                    <p className="issue-section-sub">List of equipment and current available counts per sport.</p>
+                    <h2 className="page-title">Equipment Stock Overview</h2>
+                    <p className="issue-section-sub">All rows and columns are searchable and filterable.</p>
                 </div>
 
-                {equipmentList.length === 0 ? (
-                    <p style={{ color: 'var(--color-text-light)' }}>No stock data available.</p>
+                {loading ? (
+                    <p style={{ color: 'var(--color-text-light)' }}>Loading stock overview...</p>
                 ) : (
-                    (() => {
-                        const grouped = equipmentList.reduce((acc, item) => {
-                            const sport = item.sport_name || '—';
-                            acc[sport] = acc[sport] || [];
-                            acc[sport].push(item);
-                            return acc;
-                        }, {});
-
-                        return (
-                            <div style={{ display: 'grid', gap: '16px' }}>
-                                {Object.keys(grouped).map(sport => (
-                                    <div key={sport} style={{ border: '1px solid var(--color-border)', borderRadius: '10px', padding: '12px' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <strong>{sport}</strong>
-                                            <span style={{ color: 'var(--color-text-light)' }}>{grouped[sport].length} item{grouped[sport].length !== 1 ? 's' : ''}</span>
-                                        </div>
-                                        <div style={{ marginTop: '10px', display: 'grid', gap: '8px' }}>
-                                            {grouped[sport].map(eq => (
-                                                <div key={eq.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', borderRadius: '6px', background: 'var(--color-bg)' }}>
-                                                    <div style={{ fontWeight: 600 }}>{eq.equipment_name}</div>
-                                                    <div style={{ color: eq.remaining_quantity > 0 ? 'var(--color-green)' : 'var(--color-pink)' }}>{eq.remaining_quantity}</div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        );
-                    })()
-                )}
-            </div>
-
-            {/* ══════════════════════════════════════════
-                STOCK OVERVIEW — full width table
-            ══════════════════════════════════════════ */}
-            <div className="issue-section">
-                <div className="issue-section-header">
-                    <h3 className="issue-section-title">Equipment Stock Overview</h3>
-                    <p className="issue-section-sub">Current availability of all sports equipment.</p>
-                </div>
-
-                {/* Summary numbers */}
-                <div className="stock-summary-bar">
-                    <div className="stock-summary-item">
-                        <span className="stock-summary-number">{grandTotal}</span>
-                        <span className="stock-summary-label">Total Items</span>
-                    </div>
-                    <div className="stock-summary-divider" />
-                    <div className="stock-summary-item">
-                        <span className="stock-summary-number" style={{ color: 'var(--color-green)' }}>
-                            {grandAvailable}
-                        </span>
-                        <span className="stock-summary-label">Available Now</span>
-                    </div>
-                    <div className="stock-summary-divider" />
-                    <div className="stock-summary-item">
-                        <span className="stock-summary-number" style={{ color: 'var(--color-pink)' }}>
-                            {grandIssued}
-                        </span>
-                        <span className="stock-summary-label">Currently Issued</span>
-                    </div>
-                </div>
-
-                {/* Table */}
-                <table className="equipment-table stock-full-table">
-                    <thead>
-                        <tr>
-                            <th style={{ width: '5%' }}>#</th>
-                            <th style={{ width: '25%' }}>Equipment</th>
-                            <th style={{ width: '20%' }}>Sport</th>
-                            <th style={{ width: '12%', textAlign: 'center' }}>Total</th>
-                            <th style={{ width: '12%', textAlign: 'center' }}>Available</th>
-                            <th style={{ width: '12%', textAlign: 'center' }}>Issued</th>
-                            <th style={{ width: '14%', textAlign: 'center' }}>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {equipmentList.map((item, index) => (
-                            <tr key={item.id}>
-                                <td style={{ textAlign: 'center' }}>{index + 1}</td>
-                                <td><strong>{item.equipment_name}</strong></td>
-                                <td>{getSportName(item)}</td>
-                                <td style={{ textAlign: 'center' }}>{item.total_quantity}</td>
-                                <td style={{ textAlign: 'center' }}>{item.remaining_quantity}</td>
-                                <td style={{ textAlign: 'center' }}>{item.issued_count}</td>
-                                <td style={{ textAlign: 'center' }}>
-                                    <span className={`eq-badge ${item.remaining_quantity > 0 ? 'badge-success' : 'badge-danger'}`}>
-                                        {item.remaining_quantity > 0 ? 'Available' : 'Out of Stock'}
-                                    </span>
-                                </td>
+                    <table className="equipment-table stock-full-table" style={{ borderCollapse: 'collapse', width: '100%', tableLayout: 'fixed' }}>
+                        <thead>
+                            <tr>
+                                <th style={{ width: '4%', border: '1px solid var(--color-border)' }}>#</th>
+                                <th style={{ width: '22%', border: '1px solid var(--color-border)' }}>Equipment</th>
+                                <th style={{ width: '18%', border: '1px solid var(--color-border)' }}>Sport</th>
+                                <th style={{ width: '10%', border: '1px solid var(--color-border)', textAlign: 'center' }}>Total</th>
+                                <th style={{ width: '10%', border: '1px solid var(--color-border)', textAlign: 'center' }}>Available</th>
+                                <th style={{ width: '12%', border: '1px solid var(--color-border)', textAlign: 'center' }}>Status</th>
+                                <th style={{ width: '12%', border: '1px solid var(--color-border)', textAlign: 'center' }}>Return Status</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                            <tr>
+                                <th style={{ border: '1px solid var(--color-border)' }} />
+                                <th style={{ border: '1px solid var(--color-border)' }}>
+                                    <input className="issue-search-input" style={{ width: '97%' }} placeholder="Filter equipment" value={filters.equipment} onChange={(e) => setFilter('equipment', e.target.value)} />
+                                </th>
+                                <th style={{ border: '1px solid var(--color-border)' }}>
+                                    <input className="issue-search-input" style={{ width: '97%' }} placeholder="Filter sport" value={filters.sport} onChange={(e) => setFilter('sport', e.target.value)} />
+                                </th>
+                                <th style={{ border: '1px solid var(--color-border)' }}>
+                                    <input className="issue-search-input" style={{ width: '97%' }} placeholder="Filter total" value={filters.total} onChange={(e) => setFilter('total', e.target.value)} />
+                                </th>
+                                <th style={{ border: '1px solid var(--color-border)' }}>
+                                    <input className="issue-search-input" style={{ width: '97%' }} placeholder="Filter available" value={filters.available} onChange={(e) => setFilter('available', e.target.value)} />
+                                </th>
+                                <th style={{ border: '1px solid var(--color-border)' }}>
+                                    <select className="issue-search-input" style={{ width: '97%' }} value={filters.status} onChange={(e) => setFilter('status', e.target.value)}>
+                                        <option value="all">All</option>
+                                        <option value="available">Available</option>
+                                        <option value="out of stock">Out of Stock</option>
+                                    </select>
+                                </th>
+                                <th style={{ border: '1px solid var(--color-border)' }}>
+                                    <select className="issue-search-input" style={{ width: '97%' }} value={filters.returnStatus} onChange={(e) => setFilter('returnStatus', e.target.value)}>
+                                        <option value="all">All</option>
+                                        <option value="returned">Returned</option>
+                                        <option value="pending">Pending</option>
+                                    </select>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {visibleEquipment.length === 0 ? (
+                                <tr>
+                                    <td colSpan="7" style={{ textAlign: 'center', padding: '20px', border: '1px solid var(--color-border)' }}>
+                                        No equipment matches the current filters.
+                                    </td>
+                                </tr>
+                            ) : (
+                                visibleEquipment.map((item, index) => {
+                                    const statusKey = getStatusKey(item);
+                                    const returnStateKey = getReturnStateKey(item);
+                                    return (
+                                        <tr key={item.id}>
+                                            <td style={{ textAlign: 'center', border: '1px solid var(--color-border)' }}>{index + 1}</td>
+                                            <td style={{ padding: '0px 10px', border: '1px solid var(--color-border)' }}><strong>{item.equipment_name}</strong></td>
+                                            <td style={{ padding: '0px 10px', border: '1px solid var(--color-border)' }}>{item.sport_name || '—'}</td>
+                                            <td style={{ textAlign: 'center', border: '1px solid var(--color-border)' }}>{item.total_quantity}</td>
+                                            <td style={{ textAlign: 'center', border: '1px solid var(--color-border)' }}>{item.remaining_quantity}</td>
+                                            <td style={{ textAlign: 'center', border: '1px solid var(--color-border)' }}>
+                                                <span className={`eq-badge ${statusKey === 'available' ? 'badge-success' : 'badge-danger'}`}>
+                                                    {getStatus(item)}
+                                                </span>
+                                            </td>
+                                            <td style={{ textAlign: 'center', border: '1px solid var(--color-border)' }}>
+                                                <span className={`eq-badge ${returnStateKey === 'returned' ? 'badge-success' : 'badge-danger'}`}>
+                                                    {getReturnState(item)}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                    </table>
+                )}
             </div>
         </div>
     );

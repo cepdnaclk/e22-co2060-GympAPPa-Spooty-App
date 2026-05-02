@@ -50,12 +50,12 @@ const sortRecords = (items) => {
   });
 };
 
-const getEffectiveQuantity = (item) => Number(item.issued_quantity ?? item.quantity ?? 0);
-const getOutstandingQuantity = (item) => Math.max(getEffectiveQuantity(item) - Number(item.returned_quantity ?? 0), 0);
+const getIssuedQuantity = (item) => Number(item.issued_quantity ?? item.quantity ?? 0);
+const getOutstandingQuantity = (item) => Math.max(getIssuedQuantity(item) - Number(item.returned_quantity ?? 0), 0);
 
 const StaffEquipment = () => {
   const [searchText, setSearchText] = useState('');
-  const [view, setView] = useState('all');
+  const [view, setView] = useState('active');
   const [records, setRecords] = useState([]);
   const [equipmentList, setEquipmentList] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -177,6 +177,8 @@ const StaffEquipment = () => {
       const response = await adminAPI.acceptRequest(item.request_id, { quantity: issueQuantity });
       setActionMsg(response.data?.message || 'Equipment issued successfully.');
       await refreshAll();
+      // notify other tabs/pages to refresh availability/history
+      try { localStorage.setItem('equipment-updated', String(Date.now())); } catch (e) { /* ignore */ }
     } catch (err) {
       setActionError(err.response?.data?.message || 'Could not connect to server.');
     } finally {
@@ -226,6 +228,7 @@ const StaffEquipment = () => {
       const response = await adminAPI.returnEquipment(item.request_id, { quantity: returnQuantity });
       setActionMsg(response.data?.message || 'Return processed successfully.');
       await refreshAll();
+      try { localStorage.setItem('equipment-updated', String(Date.now())); } catch (e) { /* ignore */ }
     } catch (err) {
       setActionError(err.response?.data?.message || 'Could not connect to server.');
     } finally {
@@ -318,7 +321,13 @@ const StaffEquipment = () => {
                     <td><strong>{item.student_id}</strong></td>
                     <td>{item.equipment_name}</td>
                     <td style={{ color: 'var(--color-text-light)', fontSize: '0.88rem' }}>{item.sport_name}</td>
-                    <td style={{ textAlign: 'center' }}>{item.status === 'pending' ? item.quantity : getEffectiveQuantity(item)}</td>
+                    <td style={{ textAlign: 'center' }}>
+                      {item.status === 'pending'
+                        ? item.quantity
+                        : item.status === 'pending_return'
+                          ? getOutstandingQuantity(item)
+                          : getIssuedQuantity(item)}
+                    </td>
                     <td style={{ fontSize: '0.88rem' }}>{formatDateTime(item.requested_at)}</td>
                     <td style={{ fontSize: '0.88rem' }}>{formatDateTime(item.pickup_time)}</td>
                     <td style={{ textAlign: 'center' }}>

@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import RequestEquipment from './pages/RequestEquipment';
+import RequestHistory from './pages/RequestHistory';
 import Profile from './pages/Profile';
 import ManageEquipment from './pages/ManageEquipment';
 import AddEquipment from './pages/AddEquipment';
@@ -85,6 +86,7 @@ function App() {
             <Route path="/register" element={<PublicRoute element={<Register />} />} />
             <Route path="/dashboard" element={<ProtectedRoute element={<Dashboard />} />} />
             <Route path="/request-equipment" element={<ProtectedRoute element={<RequestEquipment />} />} />
+            <Route path="/request-history" element={<ProtectedRoute element={<RequestHistory />} />} />
             <Route path="/profile" element={<ProtectedRoute element={<Profile />} />} />
             <Route path="/manage-equipment" element={<ProtectedRoute element={<ManageEquipment />} />} />
             <Route path="/add-equipment" element={<ProtectedRoute element={<AddEquipment />} />} />

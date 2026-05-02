@@ -43,6 +43,7 @@ const Register = () => {
 
   return (
     <div className="auth-container">
+
       <div className="auth-card register-card">
         <div className="auth-header">
           <h2>Sign Up with Google</h2>
@@ -70,6 +71,20 @@ const Register = () => {
       </div>
 
       <div className="auth-info">
+        <div className="info-card about-card">
+          <h3>🏟️ About GympAPPa</h3>
+          <p>
+            GympAPPa is your smart companion for sports and fitness at the 
+            <strong> University of Peradeniya</strong> — one of Sri Lanka’s most 
+            prestigious universities known for its vibrant sports culture.
+          </p>
+          <p>
+            From gym workouts to inter-faculty tournaments, everything is now 
+            connected in one place. No more confusion about courts, equipment, 
+            or schedules.
+          </p>
+        </div>
+
         <div className="info-card">
           <h4>📋 Registration Requirements</h4>
           <ul>
@@ -80,18 +95,6 @@ const Register = () => {
           </ul>
         </div>
 
-        <div className="info-card">
-          <h4>📩 Supported Faculties</h4>
-          <ul>
-            <li>Faculty of Engineering</li>
-            <li>Faculty of Arts</li>
-            <li>Faculty of Science</li>
-            <li>Faculty of Medicine</li>
-            <li>Faculty of Management</li>
-            <li>Faculty of Agriculture</li>
-            <li>And 3 more...</li>
-          </ul>
-        </div>
       </div>
     </div>
   );

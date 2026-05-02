@@ -147,25 +147,37 @@ const Login = () => {
       </div>
 
       <div className="auth-info">
-        <div className="info-card">
-          <h4>📚 User Types</h4>
-          <ul>
-            <li>Student</li>
-            <li>Games Captain</li>
-            <li>Administrator</li>
-            <li>Counter Staff</li>
-            <li>Faculty Coordinator</li>
-          </ul>
+        <div className="info-card about-card">
+          <h3>🏟️ About GympAPPa</h3>
+          <p>
+            GympAPPa is your smart companion for sports and fitness at the 
+            <strong> University of Peradeniya</strong> — one of Sri Lanka’s most 
+            prestigious universities known for its vibrant sports culture.
+          </p>
+          <p>
+            From gym workouts to inter-faculty tournaments, everything is now 
+            connected in one place. No more confusion about courts, equipment, 
+            or schedules.
+          </p>
         </div>
 
         <div className="info-card">
-          <h4>✨ Features</h4>
+          <h4>✨ What you can do</h4>
           <ul>
-            <li>Equipment Management</li>
-            <li>Real-time Availability</li>
-            <li>Request Tracking</li>
-            <li>Role-based Access</li>
+            <li>Check real-time gym & court availability</li>
+            <li>Borrow and track sports equipment</li>
+            <li>Find teammates or playing partners</li>
+            <li>Join tournaments & sports events</li>
+            <li>Follow live scores and updates</li>
           </ul>
+        </div>
+
+        <div className="info-card highlight-card">
+          <h4>🎯 Our Mission</h4>
+          <p>
+            To make sports more accessible, organized, and enjoyable for every 
+            student at PERA — whether you're a beginner or a competitive athlete.
+          </p>
         </div>
       </div>
     </div>

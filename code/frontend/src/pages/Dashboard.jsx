@@ -45,11 +45,6 @@ const formatTime = (isoString) => {
 };
 
 const Dashboard = () => {
-  const [history, setHistory]       = useState([]);
-  const [loading, setLoading]       = useState(true);
-  const [error, setError]           = useState(null);
-  const [cancelling, setCancelling] = useState(null);
-  const [toast, setToast]           = useState(null);
   const [availability, setAvailability] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
@@ -58,23 +53,6 @@ const Dashboard = () => {
   const role      = user?.role || '';
   const studentId = user?.userId || user?.user_id || '';
   const name      = user?.name || studentId;
-
-  const fetchHistory = async () => {
-    if (!studentId) {
-      setError('Unable to determine your student ID. Please login again.');
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    try {
-      const response = await equipmentAPI.getHistory(studentId);
-      setHistory(response.data);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch history');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchAvailability = async () => {
     setAvailabilityLoading(true);
@@ -90,29 +68,24 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (role === 'student') {
-      fetchHistory();
       fetchAvailability();
+      // Poll for updates every 8 seconds
+      const id = setInterval(() => fetchAvailability(), 8000);
+
+      // Listen for cross-tab update signals from staff actions
+      const onStorage = (e) => {
+        if (e.key === 'equipment-updated') {
+          fetchAvailability();
+        }
+      };
+      window.addEventListener('storage', onStorage);
+
+      return () => {
+        clearInterval(id);
+        window.removeEventListener('storage', onStorage);
+      };
     }
-    else setLoading(false);
   }, []);
-
-  const showToast = (msg, type) => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 3500);
-  };
-
-  const handleCancel = async (requestId) => {
-    setCancelling(requestId);
-    try {
-      await equipmentAPI.cancelRequest(requestId);
-      showToast('🚫 Request cancelled successfully.', 'success');
-      fetchHistory();
-    } catch (err) {
-      showToast(`❌ ${err.response?.data?.message || 'Network error. Please try again.'}`, 'error');
-    } finally {
-      setCancelling(null);
-    }
-  };
 
   // ── Admin Dashboard ──
   if (role === 'admin') {
@@ -161,30 +134,9 @@ const Dashboard = () => {
   return (
     <div className="template-container">
 
-      {toast && (
-        <div style={{
-          position:        'fixed',
-          bottom:          '30px',
-          left:            '50%',
-          transform:       'translateX(-50%)',
-          backgroundColor: toast.type === 'error' ? '#7b2020' : '#14532d',
-          color:           'white',
-          padding:         '14px 28px',
-          borderRadius:    '8px',
-          boxShadow:       '0 4px 12px rgba(0,0,0,0.3)',
-          zIndex:          9999,
-          fontSize:        '15px',
-          fontWeight:      '600',
-          maxWidth:        '90vw',
-          textAlign:       'center',
-        }}>
-          {toast.msg}
-        </div>
-      )}
-
       <div className="template-header">
         <h1>👋 Welcome, {name}</h1>
-        <p>Track your equipment requests and their current status below.</p>
+        <p>Track current equipment availability below and use the menu to view your request history.</p>
       </div>
 
       <div className="template-content">
@@ -206,106 +158,42 @@ const Dashboard = () => {
             <p style={{ color: 'var(--color-text-light)' }}>No availability data available.</p>
           )}
           {!availabilityLoading && Object.keys(availability).length > 0 && (
-            <div style={{ display: 'grid', gap: '16px' }}>
-              {Object.keys(availability).sort().map((sportName) => {
-                const items = availability[sportName] || [];
-                // if searchTerm present, only show sports that have matching equipment
-                const filteredItems = searchTerm.trim()
-                  ? items.filter(i => i.display_name?.toLowerCase().includes(searchTerm.toLowerCase()) || i.equipment_name?.toLowerCase().includes(searchTerm.toLowerCase()))
-                  : items;
-                if (filteredItems.length === 0) return null;
-
-                return (
-                  <div key={sportName} style={{ border: '1px solid var(--color-border)', borderRadius: '10px', padding: '12px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', marginBottom: '8px' }}>
-                      <strong>{sportName}</strong>
-                      <span style={{ color: 'var(--color-text-light)' }}>{filteredItems.length} item{filteredItems.length !== 1 ? 's' : ''}</span>
-                    </div>
-                    <div style={{ marginTop: '8px', display: 'grid', gap: '8px' }}>
-                      {filteredItems.map(item => (
-                        <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 8px', borderRadius: '6px', background: 'var(--color-bg)' }}>
-                          <div style={{ fontWeight: 600 }}>{item.display_name || item.equipment_name}</div>
-                          <div style={{ color: item.remaining_quantity > 0 ? 'var(--color-green)' : 'var(--color-pink)' }}>{item.remaining_quantity}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-        <div className="template-section">
-          <h2 style={{ marginBottom: '20px' }}>📋 My Equipment Request History</h2>
-
-          {loading && <p style={{ color: 'var(--color-text-light)' }}>⏳ Loading your history...</p>}
-          {error   && <p style={{ color: 'var(--color-error, red)' }}>❌ {error}</p>}
-
-          {!loading && !error && history.length === 0 && (
-            <div style={{
-              textAlign: 'center', padding: '40px 20px', color: '#888',
-              background: '#f8f9fa', borderRadius: '10px', border: '1px dashed #ccc',
-            }}>
-              <p style={{ fontSize: '18px', marginBottom: '8px' }}>No requests yet.</p>
-              <p style={{ fontSize: '14px' }}>Go to <strong>Equipment Availability</strong> to request equipment.</p>
-            </div>
-          )}
-
-          {!loading && !error && history.length > 0 && (
-            <div className="table-container">
-              <table className="data-table">
-                <thead>
-                  <tr style={{ backgroundColor: '#44A194', color: 'white' }}>
-                    <th>Sport</th>
-                    <th>Equipment</th>
-                    <th>Qty</th>
-                    <th>Pickup Time</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {history.map(item => (
-                    <tr key={item.id}>
-                      <td>{item.sport_name}</td>
-                      <td><strong>{item.display_name}</strong></td>
-                      <td style={{ textAlign: 'center' }}>{item.issued_quantity ?? item.quantity}</td>
-                      <td>{formatTime(item.pickup_time)}</td>
-                      <td>
-                        <span style={{
-                          padding: '4px 12px', borderRadius: '20px',
-                          fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap',
-                          ...statusStyle(item.status),
-                        }}>
-                          {statusLabel(item.status)}
-                        </span>
-                      </td>
-                      <td>
-                        {item.status === 'pending' ? (
-                          <button
-                            className="btn-small danger"
-                            onClick={() => handleCancel(item.id)}
-                            disabled={cancelling === item.id}
-                            style={{ whiteSpace: 'nowrap' }}
-                          >
-                            {cancelling === item.id ? '...' : '🚫 Cancel'}
-                          </button>
-                        ) : item.status === 'issued' ? (
-                          <span style={{ color: '#004085', fontSize: '13px', fontWeight: '600' }}>
-                            📦 Collect from staff
-                          </span>
-                        ) : item.status === 'pending_return' ? (
-                          <span style={{ color: '#7d4e00', fontSize: '13px', fontWeight: '600' }}>
-                            🔄 Return to staff
-                          </span>
-                        ) : (
-                          <span style={{ color: '#aaa', fontSize: '13px' }}>—</span>
-                        )}
-                      </td>
+            <div>
+              <div style={{ marginBottom: '12px' }}>
+                <table className="equipment-table stock-compact-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr>
+                      <th style={{ width: '6%', border: '1px solid var(--color-border)', padding: '8px' }}>ID</th>
+                      <th style={{ border: '1px solid var(--color-border)', padding: '8px' }}>Equipment</th>
+                      <th style={{ width: '24%', border: '1px solid var(--color-border)', padding: '8px' }}>Sport</th>
+                      <th style={{ width: '12%', border: '1px solid var(--color-border)', padding: '8px', textAlign: 'center' }}>Available</th>
+                      <th style={{ width: '14%', border: '1px solid var(--color-border)', padding: '8px', textAlign: 'center' }}>Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {Object.keys(availability).sort().flatMap((sportName) => {
+                      const items = availability[sportName] || [];
+                      return items.map((item) => ({ ...item, sport_name: sportName }));
+                    }).filter(item => {
+                      if (!searchTerm.trim()) return true;
+                      const q = searchTerm.toLowerCase();
+                      return (String(item.display_name || item.equipment_name).toLowerCase().includes(q) || String(item.sport_name || '').toLowerCase().includes(q));
+                    }).map((item) => (
+                      <tr key={item.id}>
+                        <td style={{ border: '1px solid var(--color-border)', padding: '8px', textAlign: 'center' }}>{item.id}</td>
+                        <td style={{ border: '1px solid var(--color-border)', padding: '8px' }}><strong>{item.display_name || item.equipment_name}</strong></td>
+                        <td style={{ border: '1px solid var(--color-border)', padding: '8px' }}>{item.sport_name}</td>
+                        <td style={{ border: '1px solid var(--color-border)', padding: '8px', textAlign: 'center' }}>{item.remaining_quantity}</td>
+                        <td style={{ border: '1px solid var(--color-border)', padding: '8px', textAlign: 'center' }}>
+                          <span className={`eq-badge ${item.remaining_quantity > 0 ? 'badge-success' : 'badge-danger'}`}>
+                            {item.remaining_quantity > 0 ? 'Available' : 'Out of Stock'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>

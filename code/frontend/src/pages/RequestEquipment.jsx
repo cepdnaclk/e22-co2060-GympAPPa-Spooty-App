@@ -285,7 +285,7 @@ const RequestEquipment = () => {
                                       onClick={() => handleRemove(eq.id)}
                                       disabled={count === 0}
                                     >
-                                      − Cancel
+                                      −
                                     </button>
                                     <button
                                       className="btn-small"
@@ -296,7 +296,7 @@ const RequestEquipment = () => {
                                         eq.remaining_quantity === 0 || count >= 2
                                       }
                                     >
-                                      + Request
+                                      +
                                     </button>
                                   </td>
                                   <td>{count}</td>

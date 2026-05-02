@@ -147,6 +147,8 @@ export const acceptRequest = async (req, res) => {
     try {
         const { requestId } = req.params;
         const { quantity } = req.body || {};
+        
+        console.log(`[acceptRequest] requestId=${requestId}, req.body=${JSON.stringify(req.body)}, quantity=${quantity}, typeof=${typeof quantity}`);
 
         await client.query('BEGIN');
 
@@ -164,6 +166,7 @@ export const acceptRequest = async (req, res) => {
         }
 
         const request = requestCheck.rows[0];
+        console.log(`[acceptRequest] request found: status=${request.status}, quantity=${request.quantity}, issued_quantity=${request.issued_quantity}`);
 
         if (request.status !== 'pending') {
             await client.query('ROLLBACK');
@@ -175,6 +178,7 @@ export const acceptRequest = async (req, res) => {
 
         const requestedQuantity = Number(request.quantity);
         const issueQuantity = Number(quantity ?? requestedQuantity);
+        console.log(`[acceptRequest] requestedQuantity=${requestedQuantity}, issueQuantity=${issueQuantity}, typeof(issueQuantity)=${typeof issueQuantity}`);
 
         if (!Number.isInteger(issueQuantity) || issueQuantity <= 0) {
             await client.query('ROLLBACK');
@@ -200,13 +204,16 @@ export const acceptRequest = async (req, res) => {
             });
         }
 
+        console.log(`[acceptRequest] About to UPDATE requested_equipment with id=${requestId}, issued_quantity=${issueQuantity}, quantity=${issueQuantity}`);
         await client.query(
             `UPDATE requested_equipment
              SET status = 'issued',
-                 issued_quantity = $2
+                 issued_quantity = $2,
+                 quantity = $2
              WHERE id = $1`,
             [requestId, issueQuantity]
         );
+        console.log(`[acceptRequest] UPDATE completed for requested_equipment`);
 
         await client.query(
             `UPDATE sport_equipment
@@ -214,8 +221,10 @@ export const acceptRequest = async (req, res) => {
              WHERE id = $2`,
             [issueQuantity, request.sport_equipment_id]
         );
+        console.log(`[acceptRequest] UPDATE completed for sport_equipment`);
 
         await client.query('COMMIT');
+        console.log(`[acceptRequest] TRANSACTION COMMITTED`);
 
         res.json({
             success: true,
@@ -225,7 +234,7 @@ export const acceptRequest = async (req, res) => {
 
     } catch (error) {
         await client.query('ROLLBACK');
-        console.error('Error accepting request:', error);
+        console.error('Error accepting request:', error.message, error.stack);
         res.status(500).json({ success: false, message: 'Server error' });
     } finally {
         client.release();
@@ -289,6 +298,8 @@ export const processReturn = async (req, res) => {
     try {
         const { requestId } = req.params;
         const { quantity } = req.body || {};
+        
+        console.log(`[processReturn] requestId=${requestId}, req.body=${JSON.stringify(req.body)}, quantity=${quantity}, typeof=${typeof quantity}`);
 
         await client.query('BEGIN');
 
@@ -339,15 +350,19 @@ export const processReturn = async (req, res) => {
         }
 
         const newReturned = alreadyReturned + returnQuantity;
-        const newStatus = newReturned >= issuedQuantity ? 'returned' : 'pending_return';
+        const newOutstanding = Math.max(issuedQuantity - newReturned, 0);
+        const newStatus = newOutstanding === 0 ? 'returned' : 'pending_return';
 
+        console.log(`[processReturn] issuedQuantity=${issuedQuantity}, alreadyReturned=${alreadyReturned}, outstanding=${outstanding}, returnQuantity=${returnQuantity}, newReturned=${newReturned}, newOutstanding=${newOutstanding}, newStatus=${newStatus}`);
         await client.query(
             `UPDATE requested_equipment
              SET status = $2,
-                 returned_quantity = COALESCE(returned_quantity, 0) + $3
+                 returned_quantity = COALESCE(returned_quantity, 0) + $3,
+                 quantity = $4
              WHERE id = $1`,
-            [requestId, newStatus, returnQuantity]
+            [requestId, newStatus, returnQuantity, newOutstanding]
         );
+        console.log(`[processReturn] UPDATE completed`);
 
         await client.query(
             `UPDATE sport_equipment
@@ -433,6 +448,8 @@ export const getStudentHistory = async (req, res) => {
                 re.id AS request_id,
                 re.student_id,
                 re.quantity,
+                re.issued_quantity,
+                re.returned_quantity,
                 re.pickup_time,
                 re.status,
                 re.requested_at,

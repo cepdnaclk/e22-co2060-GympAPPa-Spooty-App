@@ -12,6 +12,7 @@ const Navigation = ({ role }) => {
       // Student/General user items
       { label: 'Dashboard', path: '/dashboard', roles: ['student', 'games-captain', 'psu', 'faculty-cordinator', 'coach', 'private-coach', 'academic-staff'] },
       { label: 'Request Equipment', path: '/request-equipment', roles: ['student', 'games-captain', 'psu', 'faculty-cordinator', 'coach', 'private-coach', 'academic-staff'] },
+      { label: 'Request History', path: '/request-history', roles: ['student', 'games-captain', 'psu', 'faculty-cordinator', 'coach', 'private-coach', 'academic-staff'] },
 
       // Admin only items
       { label: 'Manage Equipment', path: '/manage-equipment', roles: ['admin'] },

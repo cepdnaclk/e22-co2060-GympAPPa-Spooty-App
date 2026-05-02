@@ -155,7 +155,18 @@ export const getStudentHistory = async (req, res) => {
 
   try {
     const query = `
-      SELECT re.*, se.display_name, s.name as sport_name
+      SELECT
+        re.id,
+        re.student_id,
+        re.equipment_id,
+        re.quantity,
+        COALESCE(NULLIF(re.issued_quantity, 0), re.quantity, 0) AS issued_quantity,
+        COALESCE(re.returned_quantity, 0) AS returned_quantity,
+        re.pickup_time,
+        re.status,
+        re.requested_at,
+        se.display_name,
+        s.name as sport_name
       FROM requested_equipment re
       JOIN sport_equipment se ON re.equipment_id = se.id
       JOIN sports s ON se.sport_id = s.id

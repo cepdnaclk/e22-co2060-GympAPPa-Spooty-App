@@ -40,10 +40,17 @@ const statusLabel = (status) => {
 
 const getEffectiveQuantity = (item) => Number(item.issued_quantity ?? item.quantity ?? 0);
 
+const getThreeMonthsAgo = () => {
+  const date = new Date();
+  date.setMonth(date.getMonth() - 3);
+  return date;
+};
+
 function MyIssuedItems() {
-  const [searchText, setSearchText] = useState('');
+  const [regSearch, setRegSearch] = useState('');
+  const [sportSearch, setSportSearch] = useState('');
+  const [equipmentSearch, setEquipmentSearch] = useState('');
   const [history, setHistory] = useState([]);
-  const [filter, setFilter] = useState('ALL');
   const [searchError, setSearchError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -52,7 +59,12 @@ function MyIssuedItems() {
     setSearchError('');
     try {
       const response = await adminAPI.getAllRequests();
-      const filtered = (response.data?.requests || []).filter((item) => ['issued', 'pending_return', 'returned'].includes(item.status));
+      const cutoff = getThreeMonthsAgo();
+      const filtered = (response.data?.requests || []).filter((item) => {
+        const isReturned = item.status === 'returned';
+        const requestedAt = item.requested_at ? new Date(item.requested_at) : null;
+        return isReturned && requestedAt && requestedAt >= cutoff;
+      });
       setHistory(sortRecords(filtered));
     } catch (err) {
       setSearchError(err.response?.data?.message || 'Could not load issued items history.');
@@ -66,21 +78,20 @@ function MyIssuedItems() {
   }, []);
 
   const filteredHistory = useMemo(() => {
-    const normalizedSearch = normalizeStudentId(searchText);
+    const normalizedReg = normalizeStudentId(regSearch);
+    const normalizedSport = sportSearch.trim().toLowerCase();
+    const normalizedEquipment = equipmentSearch.trim().toLowerCase();
 
     return history.filter((item) => {
-      if (filter === 'issued' && item.status !== 'issued') return false;
-      if (filter === 'pending_return' && item.status !== 'pending_return') return false;
-      if (filter === 'returned' && item.status !== 'returned') return false;
-      if (normalizedSearch && !normalizeStudentId(item.student_id).includes(normalizedSearch)) return false;
+      if (normalizedReg && !normalizeStudentId(item.student_id).includes(normalizedReg)) return false;
+      if (normalizedSport && !String(item.sport_name || '').toLowerCase().includes(normalizedSport)) return false;
+      if (normalizedEquipment && !String(item.equipment_name || '').toLowerCase().includes(normalizedEquipment)) return false;
       return true;
     });
-  }, [filter, history, searchText]);
+  }, [equipmentSearch, history, regSearch, sportSearch]);
 
   const counts = useMemo(() => ({
-    issued: history.filter((item) => item.status === 'issued').length,
-    pending_return: history.filter((item) => item.status === 'pending_return').length,
-    returned: history.filter((item) => item.status === 'returned').length,
+    returned: history.length,
   }), [history]);
 
   return (
@@ -89,19 +100,41 @@ function MyIssuedItems() {
         <div className="issue-heading">
           <h2 className="page-title">Issued Items History</h2>
           <p className="page-subtitle">
-            View all issued and returned records. Search by any part of a student registration number.
+            View returned records from the last 3 months. Filter by registration number, sport, or equipment.
           </p>
         </div>
 
-        <div className="issue-search-wrap">
+        <div className="issue-search-wrap" style={{ flexWrap: 'wrap' }}>
           <input
             type="text"
             className="issue-search-input"
-            placeholder="Filter by registration number or student ID"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
+            placeholder="Filter by registration number"
+            value={regSearch}
+            onChange={(e) => setRegSearch(e.target.value)}
           />
-          <button className="btn-secondary issue-search-btn" onClick={() => setSearchText('')} disabled={!searchText}>
+          <input
+            type="text"
+            className="issue-search-input"
+            placeholder="Filter by sport"
+            value={sportSearch}
+            onChange={(e) => setSportSearch(e.target.value)}
+          />
+          <input
+            type="text"
+            className="issue-search-input"
+            placeholder="Filter by equipment"
+            value={equipmentSearch}
+            onChange={(e) => setEquipmentSearch(e.target.value)}
+          />
+          <button
+            className="btn-secondary issue-search-btn"
+            onClick={() => {
+              setRegSearch('');
+              setSportSearch('');
+              setEquipmentSearch('');
+            }}
+            disabled={!regSearch && !sportSearch && !equipmentSearch}
+          >
             Clear
           </button>
         </div>
@@ -109,43 +142,22 @@ function MyIssuedItems() {
         {searchError && <div className="error-message" style={{ marginTop: '12px' }}>{searchError}</div>}
 
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px' }}>
-          {counts.issued > 0 && <span className="eq-badge badge-info">{counts.issued} Issued</span>}
-          {counts.pending_return > 0 && <span className="eq-badge badge-danger">{counts.pending_return} Return Pending</span>}
-          {counts.returned > 0 && <span className="eq-badge badge-success">{counts.returned} Returned</span>}
+          {counts.returned > 0 && <span className="eq-badge badge-success">{counts.returned} Returned in last 3 months</span>}
         </div>
       </div>
 
       <div className="issue-section">
         <div className="issue-section-header">
-          <h3 className="issue-section-title">All Issued / Returned Records</h3>
+          <h3 className="issue-section-title">Returned Records Log</h3>
           <p className="issue-section-sub">
-            Showing {filteredHistory.length} of {history.length} record{history.length !== 1 ? 's' : ''}.
+            Showing {filteredHistory.length} of {history.length} returned record{history.length !== 1 ? 's' : ''} from the last 3 months.
           </p>
-
-          <div className="tab-bar" style={{ marginTop: '14px', marginBottom: 0, borderBottom: 'none', paddingBottom: 0 }}>
-            {[
-              { key: 'ALL', label: `All (${history.length})` },
-              { key: 'issued', label: `Issued (${counts.issued})` },
-              { key: 'pending_return', label: `Return Pending (${counts.pending_return})` },
-              { key: 'returned', label: `Returned (${counts.returned})` },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                className={`tab-btn ${filter === tab.key ? 'tab-active' : ''}`}
-                onClick={() => setFilter(tab.key)}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
         </div>
 
         {loading ? (
           <p style={{ color: 'var(--color-text-light)', textAlign: 'center', padding: '32px' }}>Loading history...</p>
         ) : filteredHistory.length === 0 ? (
-          <p style={{ color: 'var(--color-text-light)', textAlign: 'center', padding: '32px' }}>
-            No matching issued or returned records found.
-          </p>
+          <p style={{ color: 'var(--color-text-light)', textAlign: 'center', padding: '32px' }}>No matching returned records found.</p>
         ) : (
           <table className="equipment-table stock-full-table">
             <thead>
