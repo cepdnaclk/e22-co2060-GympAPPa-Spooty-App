@@ -1,0 +1,477 @@
+
+/* ── Stock Overview Summary Bar ── */
+.stock-summary-bar {
+  display: flex;
+  align-items: center;
+  background: rgba(68, 161, 148, 0.06);
+  border: 1px solid rgba(68, 161, 148, 0.2);
+  border-radius: 8px;
+  padding: 16px 24px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.stock-summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  min-width: 80px;
+}
+
+.stock-summary-number {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1;
+}
+
+.stock-summary-label {
+  font-size: 0.78rem;
+  color: var(--color-text-light);
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  text-align: center;
+}
+
+.stock-summary-divider {
+  width: 1px;
+  height: 40px;
+  background: var(--color-border);
+  flex-shrink: 0;
+}
+
+/* ── Sport Group ── */
+.sport-group {
+  margin-bottom: 28px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.sport-group:last-child {
+  margin-bottom: 0;
+}
+
+.sport-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: rgba(83, 125, 150, 0.08);
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sport-group-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-blue);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Stock Progress Bar ── */
+.stock-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 120px;
+}
+
+.stock-bar-fill {
+  height: 8px;
+  border-radius: 4px;
+  flex: 1;
+  transition: width 0.4s ease;
+  min-width: 2px;
+}
+
+.stock-bar-pct {
+  font-size: 0.78rem;
+  color: var(--color-text-light);
+  min-width: 32px;
+  text-align: right;
+}
+
+@media (max-width: 600px) {
+  .stock-summary-bar {
+    padding: 12px 16px;
+  }
+  .stock-summary-number {
+    font-size: 1.4rem;
+  }
+  .stock-summary-divider {
+    display: none;
+  }
+  .stock-bar-wrap {
+    min-width: 80px;
+  }
+}
+
+/* ── Request Card (shown when student has pending requests) ── */
+.request-card {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  background: white;
+  transition: var(--transition);
+}
+
+.request-card:hover {
+  box-shadow: var(--shadow);
+}
+
+.request-info {
+  flex: 1;
+  padding: 16px 20px;
+  border-right: 1px solid var(--color-border);
+}
+
+.request-equip-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+
+.request-meta {
+  font-size: 0.82rem;
+  color: var(--color-text-light);
+  margin-top: 2px;
+}
+
+.request-qty-block {
+  display: flex;
+  align-items: center;
+  padding: 16px 24px;
+  gap: 20px;
+  border-right: 1px solid var(--color-border);
+  background: rgba(244, 240, 228, 0.5);
+}
+
+.request-qty-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 60px;
+}
+
+.request-qty-number {
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-text);
+}
+
+.request-qty-label {
+  font-size: 0.72rem;
+  color: var(--color-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-top: 4px;
+}
+
+.request-qty-divider {
+  width: 1px;
+  height: 40px;
+  background: var(--color-border);
+}
+
+.request-actions {
+  padding: 16px 20px;
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.request-warn {
+  font-size: 0.78rem;
+  color: var(--color-pink);
+  font-weight: 600;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+/* ── Sport divider row inside the stock table ── */
+.sport-divider-row td {
+  background: rgba(83, 125, 150, 0.08);
+  color: var(--color-blue);
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 8px 14px !important;
+  border-bottom: 1px solid var(--color-border);
+}
+
+@media (max-width: 700px) {
+  .request-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .request-info,
+  .request-qty-block,
+  .request-actions {
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .request-qty-block {
+    justify-content: center;
+  }
+  .request-actions {
+    border-bottom: none;
+  }
+}
+
+/* ── Two column layout for Issue Equipment page ── */
+.issue-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 24px;
+  align-items: start;
+  width: 100%;
+}
+
+.issue-left  { display: flex; flex-direction: column; gap: 20px; }
+.issue-right { display: flex; flex-direction: column; }
+
+@media (max-width: 900px) {
+  .issue-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ══════════════════════════════════════════════
+   ISSUE EQUIPMENT PAGE — full width layout
+══════════════════════════════════════════════ */
+
+/* Top search section */
+.issue-top-section {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  border-top: 4px solid var(--color-green);
+  padding: 32px 40px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+}
+
+.issue-heading {
+  margin-bottom: 24px;
+}
+
+/* Big search bar */
+.issue-search-wrap {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.issue-search-input {
+  flex: 1;
+  padding: 14px 20px;
+  font-size: 1rem;
+  border: 2px solid var(--color-border);
+  border-radius: 8px;
+  font-family: inherit;
+  transition: var(--transition);
+  background: white;
+  color: var(--color-text);
+}
+
+.issue-search-input:focus {
+  outline: none;
+  border-color: var(--color-green);
+  box-shadow: 0 0 0 3px rgba(68, 161, 148, 0.12);
+}
+
+.issue-search-btn {
+  padding: 14px 32px;
+  font-size: 1rem;
+  white-space: nowrap;
+  border-radius: 8px;
+}
+
+/* Student found bar */
+.student-found-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 20px;
+  padding: 16px 20px;
+  background: rgba(68, 161, 148, 0.06);
+  border: 1px solid rgba(68, 161, 148, 0.25);
+  border-radius: 10px;
+  flex-wrap: wrap;
+}
+
+/* Section blocks (requests + stock) */
+.issue-section {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  border-top: 4px solid var(--color-green);
+  padding: 28px 40px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+}
+
+.issue-section-header {
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.issue-section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-blue);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.issue-section-sub {
+  font-size: 0.85rem;
+  color: var(--color-text-light);
+}
+
+/* ── Requests grid ── */
+.requests-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+/* Individual request card */
+.request-grid-card {
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 20px;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: var(--transition);
+}
+
+.request-grid-card:hover {
+  box-shadow: var(--shadow);
+}
+
+.request-no-stock {
+  border-color: rgba(236, 143, 141, 0.4);
+  background: rgba(236, 143, 141, 0.04);
+}
+
+.rgc-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rgc-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.rgc-sport {
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(83, 125, 150, 0.1);
+  color: var(--color-blue);
+  padding: 2px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.rgc-qty-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.rgc-qty-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.rgc-qty-num {
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-text);
+}
+
+.rgc-qty-lbl {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--color-text-light);
+}
+
+.rgc-qty-arrow {
+  font-size: 1.2rem;
+  color: var(--color-border);
+}
+
+.rgc-time {
+  font-size: 0.8rem;
+  color: var(--color-text-light);
+}
+
+.rgc-warn {
+  font-size: 0.8rem;
+  color: var(--color-pink);
+  font-weight: 600;
+}
+
+.rgc-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.rgc-actions button {
+  padding: 8px 12px;
+  font-size: 0.88rem;
+}
+
+/* Full width stock table */
+.stock-full-table {
+  width: 100%;
+  margin-top: 16px;
+}
+
+@media (max-width: 768px) {
+  .issue-top-section,
+  .issue-section {
+    padding: 20px 16px;
+  }
+  .issue-search-wrap {
+    flex-direction: column;
+  }
+  .issue-search-btn {
+    width: 100%;
+  }
+  .requests-grid {
+    grid-template-columns: 1fr;
+  }
+}

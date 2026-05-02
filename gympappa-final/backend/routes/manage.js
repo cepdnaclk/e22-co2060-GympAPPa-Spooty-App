@@ -6,31 +6,29 @@ import {
   updateEquipment,
   deleteEquipment,
   addStock,
-  removeStock
-} from "../controllers/equipmentController.js";
+  removeStock,
+  getSports,
+  addSport
+} from "../controllers/manageController.js";
 import { authenticateToken, authorizeRole } from "../middleware/auth.js";
 
 const router = express.Router();
 
-/* Equipment List Page (supports search) */
 router.get("/", authenticateToken, getAllEquipment);
 
-/* Get single equipment (for Update Stock page) */
+router.get("/sports/list", authenticateToken, getSports);
+router.post("/sports/add", authenticateToken, authorizeRole(['admin']), addSport);
+
 router.get("/:id", authenticateToken, getEquipmentById);
 
-/* Add new equipment */
 router.post("/", authenticateToken, authorizeRole(['admin', 'counter-staff']), addEquipment);
 
-/* Update equipment details */
 router.put("/:id", authenticateToken, authorizeRole(['admin', 'counter-staff']), updateEquipment);
 
-/* Delete equipment completely */
 router.delete("/:id", authenticateToken, authorizeRole(['admin', 'counter-staff']), deleteEquipment);
 
-/* Add stock */
 router.patch("/:id/add-stock", authenticateToken, authorizeRole(['admin', 'counter-staff']), addStock);
 
-/* Remove stock */
 router.patch("/:id/remove-stock", authenticateToken, authorizeRole(['admin', 'counter-staff']), removeStock);
 
 export default router;

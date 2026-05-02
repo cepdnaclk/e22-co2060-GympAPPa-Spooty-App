@@ -1,11 +1,7 @@
-// ============================================================
-// equipmentRoutes.js — API Routes
-// ============================================================
+import express from 'express';
+const router = express.Router();
 
-const express    = require('express');
-const router     = express.Router();
-
-const {
+import {
     getStudentRequests,
     getAllEquipment,
     acceptRequest,
@@ -13,12 +9,12 @@ const {
     processReturn,
     getPendingReturns,
     getStudentHistory
-} = require('../controllers/equipmentController');
+} from '../controllers/adminController.js';
 
-const { authenticateToken, authorizeRole } = require('../middleware/auth');
+import { authenticateToken, authorizeRole } from '../middleware/auth.js';
 
 // Get all pending requests for a student by reg number
-// e.g. GET /api/equipment/requests/E%2F22%2F402
+// e.g. GET /api/admin/requests/E%2F22%2F402
 router.get('/requests/:regNumber', authenticateToken, getStudentRequests);
 
 // Get full equipment list with availability
@@ -39,4 +35,4 @@ router.get('/pending-return/:regNumber', authenticateToken, getPendingReturns);
 // Get full history for a student
 router.get('/history/:regNumber', authenticateToken, getStudentHistory);
 
-module.exports = router;
+export default router;
