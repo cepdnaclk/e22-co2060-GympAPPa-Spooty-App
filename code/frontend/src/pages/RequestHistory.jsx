@@ -114,10 +114,6 @@ function RequestHistory() {
 
   return (
     <div className="template-container">
-      <div className="template-header">
-        <h1>👋 Welcome, {name}</h1>
-        <p>View your equipment request history on this page.</p>
-      </div>
 
       <div className="template-content">
         <div className="template-section">

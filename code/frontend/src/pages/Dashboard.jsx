@@ -142,7 +142,7 @@ const Dashboard = () => {
       <div className="template-content">
 
         <div className="template-section">
-          <h2 style={{ marginBottom: '12px' }}>🏅 Current Equipment Availability</h2>
+          <h2 style={{ marginBottom: '12px' }}>🏓 Current Equipment Availability</h2>
           <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', alignItems: 'center' }}>
             <input
               type="text"
