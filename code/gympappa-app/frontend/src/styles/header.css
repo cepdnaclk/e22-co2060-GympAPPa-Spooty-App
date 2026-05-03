@@ -1,0 +1,97 @@
+.header {
+  background: #ffffff;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  padding: 18px 26px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.brand-mark,
+.brand-image {
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #10b981, #047857);
+  color: white;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 1.15rem;
+  box-shadow: 0 12px 30px rgba(4, 120, 87, 0.18);
+}
+
+.brand-image {
+  object-fit: contain;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.9rem;
+  color: #047857;
+}
+
+.header-subtitle {
+  margin: 4px 0 0;
+  color: #475569;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4338ca, #0ea5e9);
+  display: grid;
+  place-items: center;
+  color: white;
+  font-weight: 700;
+  text-transform: uppercase;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.14);
+}
+
+.user-role {
+  display: inline-flex;
+  color: #065f46;
+  background: #d1fae5;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 0.92rem;
+}
+
+.btn-logout {
+  background: #0f766e;
+  color: white;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 16px;
+  transition: transform 0.2s ease, background 0.2s ease;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.1);
+}
+
+.btn-logout:hover {
+  background: #115e59;
+  transform: translateY(-1px);
+}

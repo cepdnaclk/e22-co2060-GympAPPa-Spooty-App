@@ -1,6 +1,5 @@
 // ============================================================
 // equipmentController.js — Business Logic
-// Uses Dilara's table structure:
 //   - sport_equipment  → equipment types with quantities
 //   - requested_equipment → student requests
 //   - sports → sport categories
@@ -36,7 +35,6 @@ const getStudentRequests = async (req, res) => {
         }
 
         // Get all PENDING requests for this student
-        // 'issued' status in Dilara's table = waiting to be picked up (pending)
         const result = await pool.query(
             `SELECT 
                 re.id          AS request_id,
