@@ -53,6 +53,7 @@ const Profile = () => {
     }
   };
 
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -435,11 +436,6 @@ const Profile = () => {
                   >
                     Edit Profile
                   </button>
-                  {profile.role === 'student' && (
-                    <button className="btn-secondary">
-                      Request Role Change
-                    </button>
-                  )}
                 </div>
               </div>
 

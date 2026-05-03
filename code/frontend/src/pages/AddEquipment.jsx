@@ -129,7 +129,7 @@ const AddEquipment = () => {
                 name="display_name"
                 value={formData.display_name}
                 onChange={handleChange}
-                placeholder="e.g. Swimming Cap, Relay Baton"
+                placeholder="e.g. Swimming Board, Relay Baton"
                 required
               />
             </div>

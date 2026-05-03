@@ -38,6 +38,14 @@ export const authAPI = {
   getProfile: () => api.get('/auth/profile'),
   updateProfile: (data) => api.put('/auth/profile', data),
   setPassword: (data) => api.put('/auth/profile/password', data),
+  getRoles: () => api.get('/auth/roles'),
+  getMyRoleRequests: () => api.get('/auth/role-requests/me'),
+  createRoleRequest: (requestedRole) => api.post('/auth/role-requests', { requestedRole }),
+  cancelRoleRequest: (requestId) => api.delete(`/auth/role-requests/${requestId}`),
+  getRoleRequests: (status) => api.get(`/auth/role-requests${status ? `?status=${encodeURIComponent(status)}` : ''}`),
+  reviewRoleRequest: (requestId, action) => api.patch(`/auth/role-requests/${requestId}/review`, { action }),
+  getUsers: () => api.get('/auth/users'),
+  updateUserRole: (userId, role) => api.patch(`/auth/users/${encodeURIComponent(userId)}/role`, { role }),
 };
 
 export const equipmentAPI = {

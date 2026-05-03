@@ -78,6 +78,18 @@ export const extractUserIdFromEmail = (email) => {
   return userId.toLowerCase();
 };
 
+export const AVAILABLE_ROLES = [
+  'student',
+  'games-captain',
+  'admin',
+  'counter-staff',
+  'psu',
+  'faculty-coordinator',
+  'coach',
+  'private-coach',
+  'academic-staff'
+];
+
 export const getRoleDisplayName = (role) => {
   const roleNames = {
     'student': 'Student',

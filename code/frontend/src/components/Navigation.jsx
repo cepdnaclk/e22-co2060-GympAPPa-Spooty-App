@@ -10,13 +10,14 @@ const Navigation = ({ role }) => {
   const getMenuItems = () => {
     const allItems = [
       // Student/General user items
-      { label: 'Dashboard', path: '/dashboard', roles: ['student', 'games-captain', 'psu', 'faculty-cordinator', 'coach', 'private-coach', 'academic-staff'] },
-      { label: 'Request Equipment', path: '/request-equipment', roles: ['student', 'games-captain', 'psu', 'faculty-cordinator', 'coach', 'private-coach', 'academic-staff'] },
-      { label: 'Request History', path: '/request-history', roles: ['student', 'games-captain', 'psu', 'faculty-cordinator', 'coach', 'private-coach', 'academic-staff'] },
+      { label: 'Dashboard', path: '/dashboard', roles: ['student', 'games-captain', 'psu', 'faculty-coordinator', 'coach', 'private-coach', 'academic-staff'] },
+      { label: 'Request Equipment', path: '/request-equipment', roles: ['student', 'games-captain', 'psu', 'faculty-coordinator', 'coach', 'private-coach', 'academic-staff'] },
+      { label: 'Request History', path: '/request-history', roles: ['student', 'games-captain', 'psu', 'faculty-coordinator', 'coach', 'private-coach', 'academic-staff'] },
 
       // Admin only items
       { label: 'Manage Equipment', path: '/manage-equipment', roles: ['admin'] },
       { label: 'Add Equipment', path: '/add-equipment', roles: ['admin'] },
+      { label: 'Role Management', path: '/role-management', roles: ['admin'] },
 
       // Counter staff only items (consolidated)
       { label: 'Equipment Stock Overview', path: '/issue-equipment', roles: ['counter-staff'] },
@@ -24,7 +25,7 @@ const Navigation = ({ role }) => {
       { label: 'Issued Items History', path: '/my-issued-items', roles: ['counter-staff'] },
 
       // Everyone sees Profile
-      { label: 'Profile', path: '/profile', roles: ['student', 'games-captain', 'admin', 'counter-staff', 'psu', 'faculty-cordinator', 'coach', 'private-coach', 'academic-staff'] },
+      { label: 'Profile', path: '/profile', roles: ['student', 'games-captain', 'admin', 'counter-staff', 'psu', 'faculty-coordinator', 'coach', 'private-coach', 'academic-staff'] },
     ];
 
     return allItems.filter(item => item.roles.includes(role));

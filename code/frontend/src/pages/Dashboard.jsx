@@ -44,6 +44,8 @@ const formatTime = (isoString) => {
   });
 };
 
+const STUDENT_LIKE_ROLES = ['student', 'games-captain', 'psu', 'faculty-coordinator'];
+
 const Dashboard = () => {
   const [availability, setAvailability] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
@@ -53,6 +55,7 @@ const Dashboard = () => {
   const role      = user?.role || '';
   const studentId = user?.userId || user?.user_id || '';
   const name      = user?.name || studentId;
+  const canUseStudentFeatures = STUDENT_LIKE_ROLES.includes(role);
 
   const fetchAvailability = async () => {
     setAvailabilityLoading(true);
@@ -67,7 +70,7 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    if (role === 'student') {
+    if (canUseStudentFeatures) {
       fetchAvailability();
       // Poll for updates every 8 seconds
       const id = setInterval(() => fetchAvailability(), 8000);
@@ -85,7 +88,7 @@ const Dashboard = () => {
         window.removeEventListener('storage', onStorage);
       };
     }
-  }, []);
+  }, [canUseStudentFeatures]);
 
   // ── Admin Dashboard ──
   if (role === 'admin') {

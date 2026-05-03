@@ -15,6 +15,7 @@ import AddEquipment from './pages/AddEquipment';
 import IssueEquipment from './pages/IssueEquipment';
 import StaffEquipment from './pages/StaffEquipment';
 import MyIssuedItems from './pages/MyIssuedItems';
+import RoleManagement from './pages/RoleManagement';
 import './styles/App.css';
 
 function App() {
@@ -28,8 +29,10 @@ function App() {
 
       if (token && userData) {
         try {
-          await authAPI.getProfile();
-          setUser(JSON.parse(userData));
+          const profileResponse = await authAPI.getProfile();
+          const freshUser = profileResponse.data?.user || JSON.parse(userData);
+          setUser(freshUser);
+          localStorage.setItem('user', JSON.stringify(freshUser));
         } catch (error) {
           localStorage.removeItem('token');
           localStorage.removeItem('user');
@@ -76,7 +79,7 @@ function App() {
   };
 
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <div className="App">
         {user && <Header userProfile={user} />}
         {user && <Navigation role={user?.role} />}
@@ -93,6 +96,7 @@ function App() {
             <Route path="/issue-equipment" element={<ProtectedRoute element={<IssueEquipment />} />} />
             <Route path="/staff-equipment" element={<ProtectedRoute element={<StaffEquipment />} />} />
             <Route path="/my-issued-items" element={<ProtectedRoute element={<MyIssuedItems />} />} />
+            <Route path="/role-management" element={<ProtectedRoute element={<RoleManagement />} />} />
             <Route path="/" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />
             <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />
           </Routes>
