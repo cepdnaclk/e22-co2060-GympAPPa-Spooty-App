@@ -14,6 +14,9 @@ DROP TABLE IF EXISTS sport_equipment CASCADE;
 DROP TABLE IF EXISTS equipment CASCADE;
 DROP TABLE IF EXISTS sports CASCADE;
 DROP TABLE IF EXISTS role_request CASCADE;
+DROP TABLE IF EXISTS gym_crowd_status CASCADE;
+DROP TABLE IF EXISTS court_status CASCADE;
+DROP TABLE IF EXISTS courts CASCADE;
 DROP TABLE IF EXISTS "user" CASCADE;
 
 -- =========================
@@ -41,6 +44,52 @@ CREATE TABLE "user" (
 CREATE INDEX idx_user_id ON "user"(user_id);
 CREATE INDEX idx_university_email ON "user"(university_email);
 CREATE INDEX idx_role ON "user"(role);
+
+-- =========================
+-- COURT & VENUE AVAILABILITY TABLES
+-- =========================
+CREATE TABLE courts (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(150) NOT NULL UNIQUE,
+  type VARCHAR(20) NOT NULL
+    CHECK (type IN ('Indoor', 'Outdoor', 'Other')),
+  sport VARCHAR(100) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE court_status (
+  id SERIAL PRIMARY KEY,
+  court_id INT NOT NULL,
+  status VARCHAR(20) NOT NULL
+    CHECK (status IN ('Available', 'Occupied', 'Reserved', 'Blocked')),
+  reason TEXT,
+  start_time TIMESTAMP NOT NULL,
+  end_time TIMESTAMP NOT NULL,
+  updated_by VARCHAR(20),
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_court_status_court
+    FOREIGN KEY (court_id) REFERENCES courts(id) ON DELETE CASCADE,
+  CONSTRAINT fk_court_status_updated_by
+    FOREIGN KEY (updated_by) REFERENCES "user"(user_id) ON DELETE SET NULL,
+  CONSTRAINT chk_court_status_time_range
+    CHECK (end_time > start_time)
+);
+
+CREATE TABLE gym_crowd_status (
+  id SERIAL PRIMARY KEY,
+  crowd_level VARCHAR(20) NOT NULL
+    CHECK (crowd_level IN ('Low', 'Moderate', 'High', 'Full')),
+  updated_by VARCHAR(20),
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_gym_crowd_status_updated_by
+    FOREIGN KEY (updated_by) REFERENCES "user"(user_id) ON DELETE SET NULL
+);
+
+CREATE INDEX idx_courts_type ON courts(type);
+CREATE INDEX idx_court_status_court_id ON court_status(court_id);
+CREATE INDEX idx_court_status_updated_at ON court_status(updated_at DESC);
+CREATE INDEX idx_gym_crowd_status_updated_at ON gym_crowd_status(updated_at DESC);
 
 -- =========================
 -- ROLE REQUEST TABLE
@@ -194,6 +243,24 @@ EXECUTE FUNCTION update_user_updated_at();
 -- =========================
 -- INSERT SAMPLE DATA
 -- =========================
+
+-- COURT & VENUE SEED DATA
+INSERT INTO courts (name, type, sport) VALUES
+('Badminton Court 1', 'Indoor', 'Badminton'),
+('Badminton Court 2', 'Indoor', 'Badminton'),
+('Badminton Court 3', 'Indoor', 'Badminton'),
+('Basketball Court', 'Indoor', 'Basketball'),
+('Volleyball Court', 'Indoor', 'Volleyball'),
+('Table Tennis Area', 'Indoor', 'Table Tennis'),
+('Carrom Room', 'Indoor', 'Carrom'),
+('Chess Room', 'Indoor', 'Chess'),
+('Cricket Ground', 'Outdoor', 'Cricket'),
+('Football Field', 'Outdoor', 'Football'),
+('Rugby Ground', 'Outdoor', 'Rugby'),
+('Hockey Field', 'Outdoor', 'Hockey'),
+('Tennis Court', 'Outdoor', 'Tennis'),
+('Netball Court', 'Outdoor', 'Netball'),
+('Main Gymnasium Hall', 'Other', 'Multi-sport');
 
 -- SPORTS
 INSERT INTO sports (name) VALUES
