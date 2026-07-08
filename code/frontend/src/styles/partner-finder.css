@@ -1,0 +1,123 @@
+.partner-finder-page { display: flex; flex-direction: column; gap: 24px; }
+
+.partner-hero {
+  background: linear-gradient(135deg, #0f766e 0%, #2563eb 100%);
+  color: white;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.15);
+}
+
+.partner-hero h1 { margin: 0 0 8px; font-size: 28px; }
+.partner-hero p { margin: 0; opacity: 0.95; }
+
+.partner-panel {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+.partner-section-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.partner-section-title h2 { margin: 0; font-size: 20px; }
+
+.partner-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.partner-form-grid label { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #334155; }
+.partner-form-grid input, .partner-form-grid select, .partner-form-grid textarea {
+  border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px 12px; font: inherit;
+}
+.partner-form-grid textarea { min-height: 90px; resize: vertical; }
+.partner-form-actions { display: flex; justify-content: flex-end; margin-top: 14px; gap: 10px; }
+
+.btn-primary, .btn-secondary, .btn-danger, .btn-ghost {
+  border: none; border-radius: 999px; padding: 9px 14px; cursor: pointer; font-weight: 600;
+}
+.btn-primary { background: #2563eb; color: white; }
+.btn-secondary { background: #e2e8f0; color: #0f172a; }
+.btn-danger { background: #ef4444; color: white; }
+.btn-ghost { background: transparent; color: #2563eb; border: 1px solid #bfdbfe; }
+
+.partner-filters { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+.partner-filters .filter-field { display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.partner-filters input, .partner-filters select { border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px; font: inherit; }
+.filter-checkbox { display: flex; align-items: center; gap: 6px; margin-top: 24px; font-size: 13px; }
+
+.partner-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.partner-card {
+  border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.partner-card-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.partner-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+.badge-open { background: #dcfce7; color: #166534; }
+.badge-pending { background: #fef3c7; color: #92400e; }
+.badge-matched { background: #dbeafe; color: #1d4ed8; }
+.badge-expired { background: #fee2e2; color: #b91c1c; }
+.badge-closed { background: #f1f5f9; color: #475569; }
+.partner-meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; font-size: 13px; color: #475569; }
+.partner-notes { color: #334155; font-size: 14px; }
+.partner-card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.pastel-blue { background: linear-gradient(135deg, #eff6ff 0%, #f8fbff 100%); }
+.pastel-green { background: linear-gradient(135deg, #f0fdf4 0%, #f8fff9 100%); }
+.pastel-yellow { background: linear-gradient(135deg, #fefce8 0%, #fffbeb 100%); }
+.pastel-purple { background: linear-gradient(135deg, #f5f3ff 0%, #faf7ff 100%); }
+.partner-inline-message { border-radius: 12px; padding: 12px 14px; font-weight: 600; box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06); }
+.partner-inline-message.success {
+  background: rgb(236, 143, 141);
+  color: white;
+  padding: 10px;
+  border-radius: 10px;
+  margin-top: 8px;
+  font-weight: 600;
+}
+.partner-inline-message.error { background: #fef2f2; color: #b91c1c; }
+.partner-status-note { color: #7c3aed; font-size: 13px; font-weight: 600; }
+.partner-chat-box { margin-top: 10px; border: 1px solid #ddd6fe; border-radius: 12px; padding: 10px; background: rgba(255,255,255,0.8); }
+.partner-chat-header { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+.partner-chat-messages { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; max-height: 180px; overflow: auto; }
+.partner-chat-message { font-size: 13px; background: #f5f3ff; padding: 6px 8px; border-radius: 8px; }
+.partner-chat-form { display: flex; gap: 8px; }
+.partner-chat-form input { flex: 1; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px; }
+
+.notification-list { display: flex; flex-direction: column; gap: 12px; }
+.notification-card { border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px; background: #f8fafc; }
+.notification-card.unread { border-color: #93c5fd; background: #eff6ff; }
+.notification-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.notification-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+
+.request-editor { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.request-editor-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.request-editor-grid input, .request-editor-grid select { border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px; font: inherit; }
+.partner-empty-state {
+  grid-column: 1 / -1;
+  border: 1px dashed #cbd5e1;
+  border-radius: 14px;
+  padding: 18px;
+  color: #475569;
+  background: #f8fafc;
+  text-align: center;
+}
+.partner-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1000;
+}
+.partner-modal-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  width: min(420px, 100%);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
+}
+.partner-modal-card h3 { margin-top: 0; margin-bottom: 8px; }
+.partner-modal-card p { margin: 0 0 16px; color: #475569; }
+
+@media (max-width: 900px) {
+  .partner-form-grid, .partner-filters, .partner-grid, .request-editor-grid { grid-template-columns: 1fr; }
+}

@@ -6,6 +6,9 @@
 -- =========================
 -- DROP ALL TABLES (ORDER MATTERS)
 -- =========================
+DROP TABLE IF EXISTS notifications CASCADE;
+DROP TABLE IF EXISTS partner_join_requests CASCADE;
+DROP TABLE IF EXISTS partner_requests CASCADE;
 DROP TABLE IF EXISTS requested_equipment CASCADE;
 DROP TABLE IF EXISTS sport_equipment CASCADE;
 DROP TABLE IF EXISTS equipment CASCADE;
@@ -116,6 +119,61 @@ CREATE INDEX idx_sport_equipment_equipment_id ON sport_equipment(equipment_id);
 CREATE INDEX idx_requested_equipment_student_id ON requested_equipment(student_id);
 CREATE INDEX idx_requested_equipment_equipment_id ON requested_equipment(equipment_id);
 CREATE INDEX idx_requested_equipment_status ON requested_equipment(status);
+
+-- =========================
+-- PARTNER FINDER TABLES
+-- =========================
+CREATE TABLE partner_requests (
+  id SERIAL PRIMARY KEY,
+  user_id VARCHAR(20) NOT NULL,
+  sport VARCHAR(100) NOT NULL,
+  date DATE NOT NULL,
+  start_time VARCHAR(10) NOT NULL,
+  end_time VARCHAR(10),
+  venue VARCHAR(255),
+  skill_level VARCHAR(30) NOT NULL,
+  gender_preference VARCHAR(30) DEFAULT 'Anyone',
+  notes TEXT,
+  status VARCHAR(20) DEFAULT 'open'
+    CHECK (status IN ('open','pending','matched','expired','cancelled','closed')),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES "user"(user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE partner_join_requests (
+  id SERIAL PRIMARY KEY,
+  request_id INT NOT NULL,
+  requester_id VARCHAR(20) NOT NULL,
+  status VARCHAR(20) DEFAULT 'pending'
+    CHECK (status IN ('pending','accepted','rejected','matched','cancelled')),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (request_id) REFERENCES partner_requests(id) ON DELETE CASCADE,
+  FOREIGN KEY (requester_id) REFERENCES "user"(user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE notifications (
+  id SERIAL PRIMARY KEY,
+  receiver_id VARCHAR(20) NOT NULL,
+  sender_id VARCHAR(20),
+  type VARCHAR(50) NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  message TEXT NOT NULL,
+  related_request INT,
+  related_join_request INT,
+  is_read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (receiver_id) REFERENCES "user"(user_id) ON DELETE CASCADE,
+  FOREIGN KEY (sender_id) REFERENCES "user"(user_id) ON DELETE SET NULL,
+  FOREIGN KEY (related_request) REFERENCES partner_requests(id) ON DELETE SET NULL
+);
+
+CREATE INDEX idx_partner_requests_user_id ON partner_requests(user_id);
+CREATE INDEX idx_partner_requests_status ON partner_requests(status);
+CREATE INDEX idx_partner_requests_date ON partner_requests(date);
+CREATE INDEX idx_partner_join_requests_request_id ON partner_join_requests(request_id);
+CREATE INDEX idx_partner_join_requests_requester_id ON partner_join_requests(requester_id);
+CREATE INDEX idx_notifications_receiver_id ON notifications(receiver_id);
+CREATE INDEX idx_notifications_is_read ON notifications(is_read);
 
 -- =========================
 -- TRIGGER FUNCTION

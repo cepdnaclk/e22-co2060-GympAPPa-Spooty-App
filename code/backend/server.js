@@ -8,6 +8,7 @@ import authRoutes from './routes/auth.js';
 import equipmentRoutes from './routes/equipment.js';
 import manageRoutes from './routes/manage.js';
 import adminRoutes from './routes/admin.js';
+import partnerFinderRoutes from './routes/partnerFinder.js';
 
 dotenv.config();
 
@@ -45,6 +46,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/equipment', equipmentRoutes);
 app.use('/api/manage', manageRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/partner-finder', partnerFinderRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

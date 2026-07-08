@@ -81,4 +81,25 @@ export const adminAPI = {
   getHistory: (regNumber) => api.get(`/admin/history/${regNumber}`),
 };
 
+export const partnerFinderAPI = {
+  getMeta: () => api.get('/partner-finder/meta'),
+  createRequest: (data) => api.post('/partner-finder/requests', data),
+  getAvailableRequests: (filters = {}) => api.get('/partner-finder/requests/available', { params: filters }),
+  searchRequests: (query) => api.get('/partner-finder/requests/search', { params: { q: query } }),
+  joinRequest: (requestId) => api.post(`/partner-finder/requests/${requestId}/join`),
+  acceptJoinRequest: (requestId, joinRequestId) => api.post(`/partner-finder/requests/${requestId}/join-requests/${joinRequestId}/accept`),
+  rejectJoinRequest: (requestId, joinRequestId) => api.post(`/partner-finder/requests/${requestId}/join-requests/${joinRequestId}/reject`),
+  confirmMatch: (requestId, joinRequestId) => api.post(`/partner-finder/requests/${requestId}/join-requests/${joinRequestId}/confirm`),
+  cancelMatch: (requestId, joinRequestId) => api.post(`/partner-finder/requests/${requestId}/join-requests/${joinRequestId}/cancel`),
+  updateRequest: (requestId, data) => api.put(`/partner-finder/requests/${requestId}`, data),
+  closeRequest: (requestId) => api.post(`/partner-finder/requests/${requestId}/close`),
+  deleteRequest: (requestId) => api.delete(`/partner-finder/requests/${requestId}`),
+  getNotifications: () => api.get('/partner-finder/notifications'),
+  markNotificationRead: (notificationId) => api.patch(`/partner-finder/notifications/${notificationId}/read`),
+  deleteNotification: (notificationId) => api.delete(`/partner-finder/notifications/${notificationId}`),
+  getMyRequests: () => api.get('/partner-finder/requests/me'),
+  getChatMessages: (requestId) => api.get(`/partner-finder/requests/${requestId}/chat`),
+  sendChatMessage: (requestId, data) => api.post(`/partner-finder/requests/${requestId}/chat`, data),
+};
+
 export default api;
