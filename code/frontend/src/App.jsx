@@ -17,6 +17,7 @@ import StaffEquipment from './pages/StaffEquipment';
 import MyIssuedItems from './pages/MyIssuedItems';
 import RoleManagement from './pages/RoleManagement';
 import PartnerFinder from './pages/PartnerFinder';
+import AdminCourtManagement from './pages/AdminCourtManagement';
 import './styles/App.css';
 
 function App() {
@@ -99,6 +100,7 @@ function App() {
             <Route path="/my-issued-items" element={<ProtectedRoute element={<MyIssuedItems />} />} />
             <Route path="/role-management" element={<ProtectedRoute element={<RoleManagement />} />} />
             <Route path="/partner-finder" element={<ProtectedRoute element={<PartnerFinder />} />} />
+            <Route path="/admin-court-management" element={<ProtectedRoute element={<AdminCourtManagement />} />} />
             <Route path="/" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />
             <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />
           </Routes>
