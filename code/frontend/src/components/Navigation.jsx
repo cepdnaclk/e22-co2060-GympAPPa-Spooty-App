@@ -27,6 +27,7 @@ const Navigation = ({ role }) => {
       // Admin only items
       { label: 'Manage Equipment', path: '/manage-equipment', roles: ['admin'] },
       { label: 'Add Equipment', path: '/add-equipment', roles: ['admin'] },
+      { label: 'Court Management', path: '/admin-court-management', roles: ['admin'] },
       { label: 'Role Management', path: '/role-management', roles: ['admin'] },
 
       // Counter staff only items (consolidated)
