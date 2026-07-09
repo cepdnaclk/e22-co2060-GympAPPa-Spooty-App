@@ -22,6 +22,7 @@ const Navigation = ({ role }) => {
       { label: 'Dashboard', path: '/dashboard', roles: ['student', 'games-captain', 'psu', 'faculty-coordinator', 'coach', 'private-coach', 'academic-staff'] },
       { label: 'Request Equipment', path: '/request-equipment', roles: ['student', 'games-captain', 'psu', 'faculty-coordinator', 'coach', 'private-coach', 'academic-staff'] },
       { label: 'Partner Finder', path: '/partner-finder', roles: ['student', 'games-captain', 'psu', 'faculty-coordinator', 'coach', 'private-coach', 'academic-staff'] },
+      { label: 'Court Availability', path: '/student-court-availability', roles: ['student', 'games-captain', 'psu', 'faculty-coordinator', 'coach', 'private-coach', 'academic-staff'] },
       { label: 'Request History', path: '/request-history', roles: ['student', 'games-captain', 'psu', 'faculty-coordinator', 'coach', 'private-coach', 'academic-staff'] },
 
       // Admin only items

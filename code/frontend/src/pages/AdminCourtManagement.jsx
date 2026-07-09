@@ -209,10 +209,31 @@ const AdminCourtManagement = () => {
   };
 
   const summary = useMemo(() => {
-    const counts = { Available: 0, Occupied: 0, Reserved: 0, Blocked: 0 };
+    // The API already returns one row per court using the latest status record.
+    // Availability is derived from the total court count minus every court currently
+    // marked as Occupied, Reserved, or Blocked. Courts with no status record are treated as Available.
+    const counts = {
+      Total: courts.length,
+      Available: 0,
+      Occupied: 0,
+      Reserved: 0,
+      Blocked: 0,
+    };
+
     courts.forEach((court) => {
-      counts[court.status] = (counts[court.status] || 0) + 1;
+      const status = typeof court.status === 'string' && court.status.trim() ? court.status : 'Available';
+
+      if (status === 'Occupied') {
+        counts.Occupied += 1;
+      } else if (status === 'Reserved') {
+        counts.Reserved += 1;
+      } else if (status === 'Blocked') {
+        counts.Blocked += 1;
+      } else {
+        counts.Available += 1;
+      }
     });
+
     return counts;
   }, [courts]);
 
@@ -264,20 +285,24 @@ const AdminCourtManagement = () => {
         <section className="template-section">
           <div className="stats-row">
             <div className="stat-card">
+              <strong>{summary.Total}</strong>
+              <span>Total Courts</span>
+            </div>
+            <div className="stat-card">
               <strong>{summary.Available}</strong>
-              <span>Available</span>
+              <span>Available Courts</span>
             </div>
             <div className="stat-card">
               <strong>{summary.Occupied}</strong>
-              <span>Occupied</span>
+              <span>Occupied Courts</span>
             </div>
             <div className="stat-card">
               <strong>{summary.Reserved}</strong>
-              <span>Reserved</span>
+              <span>Reserved Courts</span>
             </div>
             <div className="stat-card">
               <strong>{summary.Blocked}</strong>
-              <span>Blocked</span>
+              <span>Blocked Courts</span>
             </div>
           </div>
 

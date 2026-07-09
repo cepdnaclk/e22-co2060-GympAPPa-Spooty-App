@@ -10,10 +10,11 @@ export const getAllCourts = async (req, res) => {
               cs.status,
               cs.reason,
               cs.start_time,
-              cs.end_time
+              cs.end_time,
+              cs.updated_at
        FROM courts c
        LEFT JOIN LATERAL (
-         SELECT status, reason, start_time, end_time
+         SELECT status, reason, start_time, end_time, updated_at
          FROM court_status
          WHERE court_id = c.id
          ORDER BY updated_at DESC
