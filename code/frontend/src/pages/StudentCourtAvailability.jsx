@@ -12,14 +12,16 @@ const getStoredUser = () => {
 };
 
 const getStatusClass = (status) => {
-  switch (status) {
-    case 'Available':
+  const normalizedStatus = (status || '').toString().trim().toLowerCase();
+
+  switch (normalizedStatus) {
+    case 'available':
       return 'status-badge available';
-    case 'Occupied':
+    case 'occupied':
       return 'status-badge occupied';
-    case 'Reserved':
+    case 'reserved':
       return 'status-badge reserved';
-    case 'Blocked':
+    case 'blocked':
       return 'status-badge blocked';
     default:
       return 'status-badge available';
@@ -42,10 +44,14 @@ const formatDateTime = (value) => {
   });
 };
 
-const getCourtTypeLabel = (type) => {
+const getCourtTypeLabel = (type, location = '') => {
   const normalizedType = (type || '').toLowerCase();
-  if (normalizedType.includes('outdoor')) return 'Outdoor';
-  if (normalizedType.includes('indoor')) return 'Indoor';
+  const normalizedLocation = (location || '').toLowerCase();
+  const sourceText = `${normalizedType} ${normalizedLocation}`;
+
+  if (sourceText.includes('outdoor')) return 'Outdoor';
+  if (sourceText.includes('indoor') || sourceText.includes('gymnasium')) return 'Indoor';
+
   return 'Indoor';
 };
 
@@ -57,10 +63,59 @@ const normalizeText = (value) => {
   return (value || '').toString().trim().toLowerCase();
 };
 
+const hasDisplayValue = (value) => {
+  return typeof value === 'string' ? value.trim().length > 0 : value !== null && value !== undefined;
+};
+
+const parseTimeToMinutes = (timeValue) => {
+  const [hours, minutes] = (timeValue || '').split(':').map((part) => Number(part));
+
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return null;
+  }
+
+  return hours * 60 + minutes;
+};
+
+const getCourtOperatingHours = (court) => {
+  const courtType = getCourtTypeLabel(court?.type, court?.location);
+
+  if (courtType === 'Indoor') {
+    return {
+      min: '09:00',
+      max: '20:00',
+      isRestricted: true,
+    };
+  }
+
+  return {
+    min: '00:00',
+    max: '23:59',
+    isRestricted: false,
+  };
+};
+
 const isCourtAvailableAtTime = (court, selectedDateTime) => {
   // A court is only unavailable when the selected time falls inside the latest status window.
   // If there is no status record, or the selected time is outside that window, the court is available.
   const status = normalizeStatus(court.status);
+  const selectedMinutes = selectedDateTime ? selectedDateTime.getHours() * 60 + selectedDateTime.getMinutes() : null;
+  const operatingHours = getCourtOperatingHours(court);
+
+  if (selectedMinutes === null) {
+    return false;
+  }
+
+  const openingMinutes = parseTimeToMinutes(operatingHours.min);
+  const closingMinutes = parseTimeToMinutes(operatingHours.max);
+
+  if (openingMinutes !== null && closingMinutes !== null) {
+    const isWithinOperatingHours = selectedMinutes >= openingMinutes && selectedMinutes <= closingMinutes;
+
+    if (!isWithinOperatingHours) {
+      return false;
+    }
+  }
 
   if (status === 'Available' || !court.start_time || !court.end_time) {
     return true;
@@ -194,7 +249,7 @@ const StudentCourtAvailability = () => {
     const normalizedSportFilter = sportFilter === 'All' ? '' : normalizeText(sportFilter);
 
     const result = courts.filter((court) => {
-      const courtType = getCourtTypeLabel(court.type).toLowerCase();
+      const courtType = getCourtTypeLabel(court.type, court.location).toLowerCase();
       const matchesType = typeFilter === 'All' || courtType === typeFilter.toLowerCase();
       const matchesSport = !normalizedSportFilter || normalizeText(court.sport) === normalizedSportFilter;
       const matchesSearch = !query || normalizeText(court.name).includes(query) || normalizeText(court.sport).includes(query);
@@ -243,6 +298,21 @@ const StudentCourtAvailability = () => {
       nextAvailableTime,
     };
   }, [filteredCourts, selectedDate, selectedTime, selectedSport]);
+
+  const selectedSportHours = useMemo(() => {
+    const relevantCourts = selectedSport === 'All'
+      ? courts
+      : courts.filter((court) => normalizeText(court.sport) === normalizeText(selectedSport));
+
+    const hasIndoorCourts = relevantCourts.some((court) => getCourtTypeLabel(court.type, court.location) === 'Indoor');
+    const hasOutdoorCourts = relevantCourts.some((court) => getCourtTypeLabel(court.type, court.location) === 'Outdoor');
+
+    if (hasIndoorCourts && !hasOutdoorCourts) {
+      return { min: '09:00', max: '20:00' };
+    }
+
+    return null;
+  }, [courts, selectedSport]);
 
   const sportOptions = useMemo(() => {
     return Array.from(new Set(courts.map((court) => court.sport).filter(Boolean))).sort();
@@ -369,7 +439,14 @@ const StudentCourtAvailability = () => {
 
               <div className="court-filter-group">
                 <label className="form-group-label" htmlFor="check-time">Time</label>
-                <input id="check-time" type="time" value={selectedTime} onChange={(event) => setSelectedTime(event.target.value)} />
+                <input
+                  id="check-time"
+                  type="time"
+                  value={selectedTime}
+                  min={selectedSportHours?.min}
+                  max={selectedSportHours?.max}
+                  onChange={(event) => setSelectedTime(event.target.value)}
+                />
               </div>
             </div>
 
@@ -413,22 +490,24 @@ const StudentCourtAvailability = () => {
                   </div>
 
                   <div className="court-card__body">
-                    <div className="info-row">
-                      <span className="info-label">Type</span>
-                      <span>{getCourtTypeLabel(court.type)}</span>
-                    </div>
-                    <div className="info-row">
-                      <span className="info-label">Reason</span>
-                      <span>{court.reason || 'No reason provided'}</span>
-                    </div>
-                    <div className="info-row">
-                      <span className="info-label">Available from</span>
-                      <span>{formatDateTime(court.start_time)}</span>
-                    </div>
-                    <div className="info-row">
-                      <span className="info-label">End time</span>
-                      <span>{formatDateTime(court.end_time)}</span>
-                    </div>
+                    {hasDisplayValue(court.reason) && (
+                      <div className="info-row">
+                        <span className="info-label">Reason</span>
+                        <span>{court.reason}</span>
+                      </div>
+                    )}
+                    {hasDisplayValue(court.start_time) && (
+                      <div className="info-row">
+                        <span className="info-label">Available from</span>
+                        <span>{formatDateTime(court.start_time)}</span>
+                      </div>
+                    )}
+                    {hasDisplayValue(court.end_time) && (
+                      <div className="info-row">
+                        <span className="info-label">End time</span>
+                        <span>{formatDateTime(court.end_time)}</span>
+                      </div>
+                    )}
                     <div className="info-row">
                       <span className="info-label">Last updated</span>
                       <span>{formatDateTime(court.updated_at)}</span>
