@@ -16,6 +16,7 @@ import IssueEquipment from './pages/IssueEquipment';
 import StaffEquipment from './pages/StaffEquipment';
 import MyIssuedItems from './pages/MyIssuedItems';
 import RoleManagement from './pages/RoleManagement';
+import PartnerFinder from './pages/PartnerFinder';
 import './styles/App.css';
 
 function App() {
@@ -97,6 +98,7 @@ function App() {
             <Route path="/staff-equipment" element={<ProtectedRoute element={<StaffEquipment />} />} />
             <Route path="/my-issued-items" element={<ProtectedRoute element={<MyIssuedItems />} />} />
             <Route path="/role-management" element={<ProtectedRoute element={<RoleManagement />} />} />
+            <Route path="/partner-finder" element={<ProtectedRoute element={<PartnerFinder />} />} />
             <Route path="/" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />
             <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} replace />} />
           </Routes>

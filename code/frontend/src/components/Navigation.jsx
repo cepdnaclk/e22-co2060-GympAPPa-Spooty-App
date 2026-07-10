@@ -1,17 +1,27 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import '../styles/navigation.css';
+
+const getUnreadCount = () => {
+  try {
+    return Number(localStorage.getItem('partnerFinderUnreadCount') || '0');
+  } catch {
+    return 0;
+  }
+};
 
 const Navigation = ({ role }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(getUnreadCount());
 
   const getMenuItems = () => {
     const allItems = [
       // Student/General user items
       { label: 'Dashboard', path: '/dashboard', roles: ['student', 'games-captain', 'psu', 'faculty-coordinator', 'coach', 'private-coach', 'academic-staff'] },
       { label: 'Request Equipment', path: '/request-equipment', roles: ['student', 'games-captain', 'psu', 'faculty-coordinator', 'coach', 'private-coach', 'academic-staff'] },
+      { label: 'Partner Finder', path: '/partner-finder', roles: ['student', 'games-captain', 'psu', 'faculty-coordinator', 'coach', 'private-coach', 'academic-staff'] },
       { label: 'Request History', path: '/request-history', roles: ['student', 'games-captain', 'psu', 'faculty-coordinator', 'coach', 'private-coach', 'academic-staff'] },
 
       // Admin only items
@@ -42,6 +52,13 @@ const Navigation = ({ role }) => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  useEffect(() => {
+    const syncUnread = () => setUnreadCount(getUnreadCount());
+    syncUnread();
+    window.addEventListener('storage', syncUnread);
+    return () => window.removeEventListener('storage', syncUnread);
+  }, []);
+
   return (
     <nav className={`navigation ${isMenuOpen ? 'active' : ''}`}>
       <div className="nav-container">
@@ -59,6 +76,7 @@ const Navigation = ({ role }) => {
                 className={`nav-link ${location.pathname === item.path ? 'active' : ''}`}
               >
                 {item.label}
+                {item.path === '/partner-finder' && unreadCount > 0 ? <span style={{ marginLeft: '8px', background: '#ef4444', color: 'white', borderRadius: '999px', padding: '2px 6px', fontSize: '11px' }}>{unreadCount}</span> : null}
               </button>
             </li>
           ))}
