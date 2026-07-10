@@ -1,5 +1,6 @@
 import pool from '../utils/database.js';
 
+/*
 export const getAllCourts = async (req, res) => {
   try {
     const result = await pool.query(
@@ -9,12 +10,41 @@ export const getAllCourts = async (req, res) => {
               c.sport,
               cs.status,
               cs.reason,
-              cs.start_time,
-              cs.end_time,
               cs.updated_at
+              cs.updated_by
        FROM courts c
        LEFT JOIN LATERAL (
-         SELECT status, reason, start_time, end_time, updated_at
+         SELECT status, reason, updated_at, updated_by
+         FROM court_status
+         WHERE court_id = c.id
+         ORDER BY updated_at DESC
+         LIMIT 1
+       ) cs ON true
+       ORDER BY c.name`
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Court fetch error:', error);
+    res.status(500).json({ message: 'Failed to fetch courts', error: error.message });
+  }
+}; */
+
+export const getAllCourts = async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT c.id,
+              c.name,
+              c.location,
+              c.capacity,
+              s.name AS sport,
+              cs.status,
+              cs.reason,
+              cs.updated_at
+       FROM courts c
+       LEFT JOIN sports s ON c.sport_id = s.id
+       LEFT JOIN LATERAL (
+         SELECT status, reason, updated_at
          FROM court_status
          WHERE court_id = c.id
          ORDER BY updated_at DESC

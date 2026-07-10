@@ -102,7 +102,6 @@ Run with:
 
 ```bash
 PGPASSWORD=your_db_password psql -U your_db_user -d your_db_name -c "ALTER TABLE ..."
-```
 
 ---
 
