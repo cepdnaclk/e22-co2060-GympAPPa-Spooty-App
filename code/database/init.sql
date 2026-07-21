@@ -300,7 +300,7 @@ FROM (VALUES
   (4, 5, 'Boxing Gloves', 10, 10),
   (13, 10, 'Javelin', 10, 10),
   (13, 11, 'Shot Put', 10, 10),
-  (5, 12, 'Chess Clock', 10, 10),
+  (5, 12, 'Chess Clock', 10, 10)
 ) AS v(sport_id, equipment_id, display_name, total_quantity, remaining_quantity)
 WHERE NOT EXISTS (
   SELECT 1 FROM sport_equipment se

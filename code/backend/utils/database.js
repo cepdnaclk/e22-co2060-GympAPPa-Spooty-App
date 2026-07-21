@@ -17,12 +17,37 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 pkg.types.setTypeParser(1082, (val) => val); // 1082 = date OID
 
 // Always use individual connection parameters, never connection string
+/* 
 const poolConfig = {
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || '5432', 10),
   database: process.env.DB_NAME || 'gympappa_spooty',
   user: process.env.DB_USER || 'postgres',
   password: typeof process.env.DB_PASSWORD === 'string' ? process.env.DB_PASSWORD : '',
+};
+*/
+
+// const isNeon = process.env.DB_HOST?.includes("neon.tech");
+
+const useSSL =
+  process.env.NODE_ENV === "production" ||
+  process.env.DB_HOST?.includes("neon.tech");
+
+const poolConfig = {
+  host: process.env.DB_HOST || "localhost",
+  port: parseInt(process.env.DB_PORT || "5432", 10),
+  database: process.env.DB_NAME || "gympappa_spooty",
+  user: process.env.DB_USER || "postgres",
+  password:
+    typeof process.env.DB_PASSWORD === "string"
+      ? process.env.DB_PASSWORD
+      : "",
+
+  ...(useSSL && {
+    ssl: {
+      rejectUnauthorized: false,
+    },
+  }),
 };
 
 console.log(`Connecting to database: ${poolConfig.user}@${poolConfig.host}:${poolConfig.port}/${poolConfig.database}`);
