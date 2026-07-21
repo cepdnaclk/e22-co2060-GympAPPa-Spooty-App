@@ -47,6 +47,22 @@ const MyRequests = ({
     return new Date() > end;
   };
 
+  // Picks the OTHER person in the match, regardless of which side (owner/joiner) is viewing.
+  // Owner (isOwner: true)  -> the joiner's info is stored in partnerName / partnerRegistrationNumber
+  // Joiner (isOwner: false) -> the owner's info is stored in studentName / registrationNumber
+  const getPartnerDisplayInfo = (request) => {
+    if (request.isOwner) {
+      return {
+        name: request.partnerName || 'Partner',
+        registrationNumber: request.partnerRegistrationNumber || '—',
+      };
+    }
+    return {
+      name: request.studentName || 'Partner',
+      registrationNumber: request.registrationNumber || '—',
+    };
+  };
+
   return (
     <section className="partner-panel pastel-yellow">
       <div className="partner-section-title">
@@ -59,7 +75,8 @@ const MyRequests = ({
           ? <div className="partner-empty-state">You have not created any partner requests yet. Create one above to start matching.</div>
           : requests.map((request) => {
             const sessionDone = isSessionExpired(request.date, request.endTime, request.startTime);
-            
+            const partnerInfo = getPartnerDisplayInfo(request);
+
             return (
               <div key={request.id} className="partner-card">
 
@@ -160,10 +177,10 @@ const MyRequests = ({
                     <div className="partner-chat-header">Partner Details</div>
                     <div className="partner-chat-messages">
                       <div className="partner-chat-message">
-                        <strong>Name:</strong> {request.partnerName || 'Partner'}
+                        <strong>Name:</strong> {partnerInfo.name}
                       </div>
                       <div className="partner-chat-message">
-                        <strong>Registration Number:</strong> {request.partnerRegistrationNumber || '—'}
+                        <strong>Registration Number:</strong> {partnerInfo.registrationNumber}
                       </div>
                       <div className="partner-chat-message">
                         <strong>Sport:</strong> {request.sport}
