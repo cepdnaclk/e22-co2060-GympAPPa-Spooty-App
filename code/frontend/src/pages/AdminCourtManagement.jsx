@@ -186,8 +186,6 @@ const AdminCourtManagement = () => {
         reason: editForm.reason.trim(),
         start_time: editForm.start_time || null,
         end_time: editForm.end_time || null,
-        startTime: editForm.start_time || null,
-        endTime: editForm.end_time || null,
       };
 
       await axios.put(`/api/courts/${selectedCourt.id}/status`, payload, {
